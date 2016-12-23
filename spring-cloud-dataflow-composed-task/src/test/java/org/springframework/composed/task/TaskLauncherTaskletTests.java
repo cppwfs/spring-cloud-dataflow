@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.composed.task;
 
 import java.util.ArrayList;
@@ -78,7 +94,8 @@ public class TaskLauncherTaskletTests {
 
 		taskRepositoryInitializer.afterPropertiesSet();
 		taskOperations = mock(TaskOperations.class);
-		TaskExecutionDaoFactoryBean taskExecutionDaoFactoryBean = new TaskExecutionDaoFactoryBean(dataSource);
+		TaskExecutionDaoFactoryBean taskExecutionDaoFactoryBean =
+				new TaskExecutionDaoFactoryBean(dataSource);
 		taskRepository = new SimpleTaskRepository(taskExecutionDaoFactoryBean);
 
 	}
@@ -108,7 +125,9 @@ public class TaskLauncherTaskletTests {
 		final String ERROR_MESSAGE =
 				"Could not find task definition named " + TASK_NAME;
 		VndErrors errors = new VndErrors("message", ERROR_MESSAGE, new Link("ref"));
-		Mockito.doThrow(new DataFlowClientException(errors)).when(taskOperations).launch(Matchers.anyString(), Matchers.any(), Matchers.any());
+		Mockito.doThrow(new DataFlowClientException(errors))
+				.when(taskOperations)
+				.launch(Matchers.anyString(), Matchers.any(), Matchers.any());
 		TaskLauncherTasklet taskLauncherTasklet = getTaskExecutionTasklet();
 		ChunkContext chunkContext = chunkContext();
 		try {
@@ -141,8 +160,8 @@ public class TaskLauncherTaskletTests {
 	private TaskLauncherTasklet getTaskExecutionTasklet() {
 		TaskExecution taskExecution = taskRepository.createTaskExecution();
 		return new TaskLauncherTasklet(
-				String.valueOf(taskExecution.getExecutionId()), taskOperations, TASK_NAME,
-				new HashMap<>(), new ArrayList<>());
+				String.valueOf(taskExecution.getExecutionId()), taskOperations,
+				TASK_NAME, new HashMap<>(), new ArrayList<>());
 	}
 
 	private ChunkContext chunkContext ()
