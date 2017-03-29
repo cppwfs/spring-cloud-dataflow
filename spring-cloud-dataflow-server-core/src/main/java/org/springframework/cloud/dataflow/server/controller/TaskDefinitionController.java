@@ -25,6 +25,7 @@ import org.springframework.cloud.dataflow.server.repository.DeploymentKey;
 import org.springframework.cloud.dataflow.server.repository.NoSuchTaskDefinitionException;
 import org.springframework.cloud.dataflow.server.repository.TaskDefinitionRepository;
 import org.springframework.cloud.dataflow.server.repository.support.SearchPageable;
+import org.springframework.cloud.dataflow.server.service.TaskService;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
 import org.springframework.data.domain.Pageable;
@@ -65,6 +66,8 @@ public class TaskDefinitionController {
 
 	private TaskLauncher taskLauncher;
 
+	private TaskService taskService;
+
 	/**
 	 * The app registry this controller will use to lookup apps.
 	 */
@@ -80,18 +83,22 @@ public class TaskDefinitionController {
 	 * @param repository the repository this controller will use for task CRUD operations.
 	 * @param deploymentIdRepository the repository this controller will use for deployment IDs
 	 * @param taskLauncher the TaskLauncher this controller will use to check task status.
-	 * @param appRegistry          the app registry to look up registered apps
+	 * @param appRegistry the app registry to look up registered apps.
+	 * @param taskService handles specialized behavior needed for tasks.
+	 *
 	 */
 	public TaskDefinitionController(TaskDefinitionRepository repository, DeploymentIdRepository deploymentIdRepository,
-			TaskLauncher taskLauncher, AppRegistry appRegistry) {
+			TaskLauncher taskLauncher, AppRegistry appRegistry, TaskService taskService) {
 		Assert.notNull(repository, "repository must not be null");
-		Assert.notNull(deploymentIdRepository, "DeploymentIdRepository must not be null");
+		Assert.notNull(deploymentIdRepository, "deploymentIdRepository must not be null");
 		Assert.notNull(taskLauncher, "taskLauncher must not be null");
-		Assert.notNull(appRegistry, "AppRegistry must not be null");
+		Assert.notNull(appRegistry, "appRegistry must not be null");
+		Assert.notNull(taskService, "taskService must not be null");
 		this.repository = repository;
 		this.deploymentIdRepository = deploymentIdRepository;
 		this.taskLauncher = taskLauncher;
 		this.appRegistry = appRegistry;
+		this.taskService = taskService;
 	}
 
 	/**
@@ -104,12 +111,7 @@ public class TaskDefinitionController {
 	public TaskDefinitionResource save(@RequestParam("name") String name,
 			@RequestParam("definition") String dsl) {
 		TaskDefinition taskDefinition = new TaskDefinition(name, dsl);
-		String appName = taskDefinition.getRegisteredAppName();
-		if (appRegistry.find(appName, ApplicationType.task) == null) {
-			throw new IllegalArgumentException(String.format("Application name '%s' with type '%s' does not exist in the app registry.",
-					appName, ApplicationType.task));
-		}
-		repository.save(taskDefinition);
+		taskService.saveComposedTask(name, dsl);
 		return taskAssembler.toResource(taskDefinition);
 	}
 

@@ -49,6 +49,7 @@ import org.springframework.cloud.dataflow.server.repository.InMemoryTaskDefiniti
 import org.springframework.cloud.dataflow.server.repository.StreamDefinitionRepository;
 import org.springframework.cloud.dataflow.server.repository.TaskDefinitionRepository;
 import org.springframework.cloud.dataflow.server.service.TaskService;
+import org.springframework.cloud.dataflow.server.service.impl.ComposedTaskProperties;
 import org.springframework.cloud.dataflow.server.service.impl.DefaultTaskService;
 import org.springframework.cloud.deployer.resource.maven.MavenProperties;
 import org.springframework.cloud.deployer.resource.maven.MavenResourceLoader;
@@ -147,9 +148,10 @@ public class TestDependencies extends WebMvcConfigurationSupport {
 
 	@Bean
 	public TaskDefinitionController taskDefinitionController(TaskDefinitionRepository repository,
-			DeploymentIdRepository deploymentIdRepository) {
+			DeploymentIdRepository deploymentIdRepository,
+			ApplicationConfigurationMetadataResolver metadataResolver) {
 		return new TaskDefinitionController(repository, deploymentIdRepository,
-				taskLauncher(), appRegistry());
+				taskLauncher(), appRegistry(), taskService(metadataResolver, taskRepository()));
 	}
 
 	@Bean
@@ -196,8 +198,10 @@ public class TestDependencies extends WebMvcConfigurationSupport {
 	public TaskService taskService(
 		ApplicationConfigurationMetadataResolver metadataResolver,
 		TaskRepository taskExecutionRepository) {
-		return new DefaultTaskService(new DataSourceProperties(), taskDefinitionRepository(), taskExplorer(), taskExecutionRepository,
-				appRegistry(), resourceLoader(), taskLauncher(), metadataResolver);
+		return new DefaultTaskService(new DataSourceProperties(),
+				taskDefinitionRepository(), taskExplorer(), taskExecutionRepository,
+				appRegistry(), resourceLoader(), taskLauncher(),
+				metadataResolver, new ComposedTaskProperties());
 	}
 
 	@Bean

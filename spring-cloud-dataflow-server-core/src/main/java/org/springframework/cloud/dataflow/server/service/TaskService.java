@@ -46,4 +46,12 @@ public interface TaskService {
 	 */
 	void cleanupExecution(long id);
 
+	/**
+	 * Saves the task definition. If it is a Composed Task then the task
+	 * definitions required for a ComposedTaskRunner task are also created.
+	 *
+	 * @param name The name of the composed task.
+	 * @param dsl The dsl that comprises the composed task.
+	 */
+	void saveComposedTask(String name, String dsl);
 }
