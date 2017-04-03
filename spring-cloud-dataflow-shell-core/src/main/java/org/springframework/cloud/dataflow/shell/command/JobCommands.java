@@ -19,6 +19,7 @@ package org.springframework.cloud.dataflow.shell.command;
 import java.util.Map;
 
 import org.springframework.batch.core.JobParameter;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.dataflow.rest.client.JobOperations;
 import org.springframework.cloud.dataflow.rest.resource.JobExecutionResource;
@@ -93,7 +94,7 @@ public class JobCommands implements CommandMarker {
 					.addValue(job.getTaskExecutionId())
 					.addValue(job.getJobExecution().getJobInstance().getJobName())
 					.addValue(job.getJobExecution().getStartTime())
-					.addValue(job.getJobExecution().getStepExecutions().size())
+					.addValue(getStepExecutionCount(job))
 					.addValue(job.isDefined() ? "Created" : "Destroyed");
 		}
 		TableBuilder builder = new TableBuilder(modelBuilder.build());
@@ -103,6 +104,15 @@ public class JobCommands implements CommandMarker {
 		return builder.build();
 	}
 
+	private Long getStepExecutionCount(JobExecutionResource job) {
+		long stepExecutionSize = 0;
+		for(StepExecution stepExecution : job.getJobExecution().getStepExecutions()) {
+			if(stepExecution.getId() != null) {
+				stepExecutionSize++;
+			}
+		}
+		return stepExecutionSize;
+	}
 
 	@CliCommand(value = EXECUTION_DISPLAY, help = "Display the details of a specific job execution")
 	public Table executionDisplay(
