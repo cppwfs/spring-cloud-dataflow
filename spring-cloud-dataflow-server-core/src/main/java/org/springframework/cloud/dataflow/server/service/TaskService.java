@@ -63,4 +63,10 @@ public interface TaskService {
 	 */
 	void deleteTaskDefinition(String name);
 
+	/**
+	 * Determines if the DSL is a composed DSL definition.
+	 * @param dsl the Task DSL to evaluate
+	 * @return true if it is composed task definition else false.
+	 */
+	boolean isComposedDefinition(String dsl) ;
 }

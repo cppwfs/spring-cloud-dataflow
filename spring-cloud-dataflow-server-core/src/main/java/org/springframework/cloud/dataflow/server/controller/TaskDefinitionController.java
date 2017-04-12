@@ -109,7 +109,8 @@ public class TaskDefinitionController {
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public TaskDefinitionResource save(@RequestParam("name") String name,
 			@RequestParam("definition") String dsl) {
-		TaskDefinition taskDefinition = new TaskDefinition(name, dsl);
+		TaskDefinition taskDefinition = new TaskDefinition(name, dsl,
+				taskService.isComposedDefinition(dsl));
 		taskService.saveTaskDefinition(name, dsl);
 		return taskAssembler.toResource(taskDefinition);
 	}
@@ -189,7 +190,8 @@ public class TaskDefinitionController {
 			String state = (status != null) ? status.getState().name() : "unknown";
 			TaskDefinitionResource taskDefinitionResource = new TaskDefinitionResource(
 					taskDefinition.getName(),
-					taskDefinition.getDslText());
+					taskDefinition.getDslText(),
+					taskDefinition.isComposed());
 			taskDefinitionResource.setStatus(state);
 			return taskDefinitionResource;
 		}

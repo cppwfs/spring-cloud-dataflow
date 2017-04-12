@@ -36,6 +36,8 @@ public class TaskDefinitionResource extends ResourceSupport {
 	 */
 	private String status;
 
+	private boolean isComposed;
+
 	/**
 	 * Default constructor to be used by Jackson.
 	 */
@@ -43,9 +45,10 @@ public class TaskDefinitionResource extends ResourceSupport {
 	protected TaskDefinitionResource() {
 	}
 
-	public TaskDefinitionResource(String name, String dslText) {
+	public TaskDefinitionResource(String name, String dslText, boolean isComposed) {
 		this.name = name;
 		this.dslText = dslText;
+		this.isComposed = isComposed;
 	}
 
 	public String getName() {
@@ -54,6 +57,10 @@ public class TaskDefinitionResource extends ResourceSupport {
 
 	public String getDslText() {
 		return dslText;
+	}
+
+	public boolean isComposed() {
+		return isComposed;
 	}
 
 	/**

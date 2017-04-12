@@ -41,13 +41,20 @@ public class TaskDefinition extends DataFlowAppDefinition {
 	 */
 	private final String dslText;
 
-	TaskDefinition(String registeredAppName, String label, Map<String, String> properties) {
+	/**
+	 * true if the dslText is a composed task definition  false if standard task.
+	 */
+	private final boolean isComposed;
+
+	TaskDefinition(String registeredAppName, String label, Map<String,
+			String> properties) {
 		super(registeredAppName, label, properties);
 		this.dslText = "";
 		properties.put(SPRING_CLOUD_TASK_NAME, registeredAppName);
+		this.isComposed = false;
 	}
 
-	public TaskDefinition(String name, String dsl) {
+	public TaskDefinition(String name, String dsl, boolean isComposed) {
 		this.dslText = dsl;
 		Map<String, String> properties = new HashMap<>();
 		TaskNode taskNode = new TaskParser(name, dsl, true, true).parse();
@@ -65,11 +72,16 @@ public class TaskDefinition extends DataFlowAppDefinition {
 		}
 		properties.put(SPRING_CLOUD_TASK_NAME, name);
 		this.appDefinition = new AppDefinition(name, properties);
+		this.isComposed = isComposed;
 	}
 
 
 	public String getDslText() {
 		return dslText;
+	}
+
+	public boolean isComposed() {
+		return isComposed;
 	}
 
 	@Override
