@@ -38,6 +38,7 @@ import org.springframework.cloud.dataflow.rest.client.support.StepExecutionHisto
 import org.springframework.cloud.dataflow.rest.client.support.StepExecutionJacksonMixIn;
 import org.springframework.cloud.dataflow.rest.job.StepExecutionHistory;
 import org.springframework.cloud.dataflow.rest.resource.RootResource;
+import org.springframework.cloud.dataflow.rest.resource.about.AboutResource;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.UriTemplate;
@@ -45,6 +46,7 @@ import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -208,7 +210,7 @@ public class DataFlowTemplate implements DataFlowOperations {
 				this.aggregateCounterOperations = null;
 			}
 			if (resourceSupport.hasLink(TaskTemplate.DEFINITIONS_RELATION)) {
-				this.taskOperations = new TaskTemplate(restTemplate, resourceSupport);
+				this.taskOperations = new TaskTemplate(restTemplate, resourceSupport, getVersion());
 				this.jobOperations = new JobTemplate(restTemplate, resourceSupport);
 				if(resourceSupport.hasLink(SchedulerTemplate.SCHEDULES_RELATION)) {
 					this.schedulerOperations = new SchedulerTemplate(restTemplate, resourceSupport);
@@ -239,6 +241,28 @@ public class DataFlowTemplate implements DataFlowOperations {
 			this.completionOperations = null;
 			this.schedulerOperations = null;
 		}
+	}
+
+	private String getVersion() {
+		final String separator = ".";
+		String versionPrefix = "";
+
+		AboutResource aboutResource = this.aboutOperations.get();
+		if(aboutResource != null) {
+			String[] versionTokens = StringUtils.delimitedListToStringArray(aboutResource.getVersionInfo().getCore().getVersion(), separator);
+			String version = aboutResource.getVersionInfo().getCore().getVersion();
+
+			for (int offset = 0; versionTokens.length > offset; offset++) {
+				String token = versionTokens[offset];
+				if (StringUtils.hasLength(token) && !Character.isAlphabetic(token.charAt(0))) {
+					if (offset != 0) {
+						versionPrefix += separator;
+					}
+					versionPrefix += token;
+				}
+			}
+		}
+		return versionPrefix;
 	}
 
 	/**
