@@ -59,7 +59,7 @@ We have also successfully deployed with https://kubernetes.io/docs/getting-start
 We note where you need to adjust for deploying on Minikube.
 
 NOTE: When starting Minikube, you should allocate some extra resources, since we deploy several services.
-We start with `minikube start --cpus=4 --memory=4096`.
+We start with `minikube start --cpus=4 --memory=8192`.
 Please note that the allocated memory and cpu for the Minikube VM directly gets assigned to the number of applications deployed in a stream/task.
 The more you add, the more VM resources is required.
 
@@ -687,7 +687,7 @@ scdf-server  10.103.246.82    130.211.203.246   80/TCP     4m
 In the preceding example, the URL to use is http://130.211.203.246
 
 If you use Minikube, you do not have an external load balancer and the EXTERNAL-IP column shows `<pending>`.
-You need to use the NodePort assigned for the `skipper` service. The following example (with output) shows how to look up the URL to use:
+You need to use the NodePort assigned for the `scdf` service. The following example (with output) shows how to look up the URL to use:
 
 
 [source]
@@ -710,6 +710,7 @@ dataflow:>
 
 Alternatively, you can use the `--dataflow.uri` command line option.  The shell's `--help` command line option shows what is available.
 
+NOTE: If you use Minikube include the port for example: `dataflow config server --uri http://130.211.203.246:31991`
 
 2) Verify the registered platforms in Skipper, as the following example (with output) shows:
 
