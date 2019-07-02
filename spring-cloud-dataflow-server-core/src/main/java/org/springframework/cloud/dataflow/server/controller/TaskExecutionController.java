@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.cloud.dataflow.core.PlatformTaskExecutionInformation;
@@ -211,6 +212,17 @@ public class TaskExecutionController {
 			throw new NoSuchTaskExecutionException(id);
 		}
 		this.taskDeleteService.cleanupExecution(id);
+	}
+
+	/**
+	 * Stop a set of task executions.
+	 *
+	 * @param ids the ids of the {@link TaskExecution}s to stop
+	 */
+	@RequestMapping(value = "/stop/{id}", method = RequestMethod.POST)
+	@ResponseStatus(HttpStatus.OK)
+	public void stop(@PathVariable("id") Set<Long> ids) {
+		this.taskExecutionService.stopTaskExecution(ids);
 	}
 
 	private Page<TaskJobExecutionRel> getPageableRelationships(Page<TaskExecution> taskExecutions, Pageable pageable) {

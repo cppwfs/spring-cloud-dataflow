@@ -16,19 +16,34 @@
 
 package org.springframework.cloud.dataflow.server.repository;
 
+import java.util.Set;
+
 import org.springframework.cloud.task.repository.TaskExecution;
+import org.springframework.util.StringUtils;
 
 /**
+ * This exception is used when requesting a {@link TaskExecution} that does not exist.
+ *
  * @author Glenn Renfro
+ * @author Gunnar Hillert
  */
 public class NoSuchTaskExecutionException extends RuntimeException {
 
 	/**
-	 * Create a new exception.
+	 * Create a new exception that can handle a single {@link TaskExecution} id.
 	 *
 	 * @param id the id of the {@link TaskExecution} that could not be found
 	 */
 	public NoSuchTaskExecutionException(long id) {
 		super("Could not find TaskExecution with id " + id);
+	}
+
+	/**
+	 * Create a new exception that handles multiple {@link TaskExecution} ids.
+	 *
+	 * @param ids the ids of the {@link TaskExecution} that could not be found
+	 */
+	public NoSuchTaskExecutionException(Set<Long> ids) {
+		super("Could not find TaskExecutions with the following ids: " + StringUtils.collectionToDelimitedString(ids, ", "));
 	}
 }

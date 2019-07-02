@@ -60,6 +60,8 @@ import org.springframework.cloud.dataflow.server.controller.TaskExecutionControl
 import org.springframework.cloud.dataflow.server.controller.TaskLogsController;
 import org.springframework.cloud.dataflow.server.controller.TaskPlatformController;
 import org.springframework.cloud.dataflow.server.job.LauncherRepository;
+import org.springframework.cloud.dataflow.server.repository.DataflowTaskExecutionDao;
+import org.springframework.cloud.dataflow.server.repository.JdbcDataflowTaskExecutionDao;
 import org.springframework.cloud.dataflow.server.repository.TaskDefinitionRepository;
 import org.springframework.cloud.dataflow.server.repository.TaskDeploymentRepository;
 import org.springframework.cloud.dataflow.server.service.TaskDeleteService;
@@ -82,6 +84,7 @@ import org.springframework.cloud.deployer.resource.maven.MavenProperties;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.task.batch.listener.TaskBatchDao;
 import org.springframework.cloud.task.batch.listener.support.JdbcTaskBatchDao;
+import org.springframework.cloud.task.configuration.TaskProperties;
 import org.springframework.cloud.task.repository.TaskExplorer;
 import org.springframework.cloud.task.repository.TaskRepository;
 import org.springframework.cloud.task.repository.support.SimpleTaskExplorer;
@@ -235,17 +238,24 @@ public class JobDependencies {
 	}
 
 	@Bean
+	public DataflowTaskExecutionDao dataflowTaskExecutionDao(DataSource dataSource) {
+		return new JdbcDataflowTaskExecutionDao(dataSource, new TaskProperties());
+	}
+
+	@Bean
 	public TaskExecutionService taskService(LauncherRepository launcherRepository,
 			AuditRecordService auditRecordService, TaskRepository taskRepository,
 			TaskExecutionInfoService taskExecutionInfoService,
 			TaskDeploymentRepository taskDeploymentRepository,
 			TaskExecutionCreationService taskExecutionRepositoryService,
-			TaskAppDeploymentRequestCreator taskAppDeploymentRequestCreator) {
+			TaskAppDeploymentRequestCreator taskAppDeploymentRequestCreator,
+			TaskExplorer taskExplorer, DataflowTaskExecutionDao dataflowTaskExecutionDao) {
 		return new DefaultTaskExecutionService(
 				launcherRepository, auditRecordService,
 				taskRepository,
 				taskExecutionInfoService, taskDeploymentRepository,
-				taskExecutionRepositoryService, taskAppDeploymentRequestCreator);
+				taskExecutionRepositoryService, taskAppDeploymentRequestCreator,
+				taskExplorer, dataflowTaskExecutionDao);
 	}
 
 	@Bean

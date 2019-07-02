@@ -41,6 +41,8 @@ import org.springframework.cloud.dataflow.server.config.VersionInfoProperties;
 import org.springframework.cloud.dataflow.server.config.apps.CommonApplicationProperties;
 import org.springframework.cloud.dataflow.server.config.features.FeaturesProperties;
 import org.springframework.cloud.dataflow.server.job.LauncherRepository;
+import org.springframework.cloud.dataflow.server.repository.DataflowTaskExecutionDao;
+import org.springframework.cloud.dataflow.server.repository.JdbcDataflowTaskExecutionDao;
 import org.springframework.cloud.dataflow.server.repository.TaskDefinitionRepository;
 import org.springframework.cloud.dataflow.server.repository.TaskDeploymentRepository;
 import org.springframework.cloud.dataflow.server.service.SchedulerService;
@@ -62,6 +64,7 @@ import org.springframework.cloud.dataflow.server.service.impl.TaskConfigurationP
 import org.springframework.cloud.dataflow.server.service.impl.validation.DefaultTaskValidationService;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.scheduler.spi.core.Scheduler;
+import org.springframework.cloud.task.configuration.TaskProperties;
 import org.springframework.cloud.task.repository.TaskExplorer;
 import org.springframework.cloud.task.repository.TaskRepository;
 import org.springframework.cloud.task.repository.support.SimpleTaskExplorer;
@@ -224,16 +227,23 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 	}
 
 	@Bean
+	public DataflowTaskExecutionDao dataflowTaskExecutionDao(DataSource dataSource) {
+		return new JdbcDataflowTaskExecutionDao(dataSource, new TaskProperties());
+	}
+
+	@Bean
 	public TaskExecutionService defaultTaskService(LauncherRepository launcherRepository,
 			AuditRecordService auditRecordService, TaskRepository taskRepository,
 			TaskExecutionInfoService taskExecutionInfoService,
 			TaskDeploymentRepository taskDeploymentRepository,
 			TaskExecutionCreationService taskExecutionRepositoryService,
-			TaskAppDeploymentRequestCreator taskAppDeploymentRequestCreator) {
+			TaskAppDeploymentRequestCreator taskAppDeploymentRequestCreator,
+			TaskExplorer taskExplorer, DataflowTaskExecutionDao dataflowTaskExecutionDao) {
 		return new DefaultTaskExecutionService(
 				launcherRepository, auditRecordService, taskRepository,
 				taskExecutionInfoService, taskDeploymentRepository,
-				taskExecutionRepositoryService, taskAppDeploymentRequestCreator);
+				taskExecutionRepositoryService, taskAppDeploymentRequestCreator,
+				taskExplorer, dataflowTaskExecutionDao);
 	}
 
 	@Bean

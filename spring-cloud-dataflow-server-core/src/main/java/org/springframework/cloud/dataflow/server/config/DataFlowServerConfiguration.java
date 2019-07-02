@@ -17,6 +17,7 @@
 package org.springframework.cloud.dataflow.server.config;
 
 import javax.servlet.Filter;
+import javax.sql.DataSource;
 
 import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,6 +26,9 @@ import org.springframework.cloud.dataflow.server.config.apps.CommonApplicationPr
 import org.springframework.cloud.dataflow.server.config.features.FeaturesConfiguration;
 import org.springframework.cloud.dataflow.server.config.web.WebConfiguration;
 import org.springframework.cloud.dataflow.server.db.migration.DataFlowFlywayConfigurationCustomizer;
+import org.springframework.cloud.dataflow.server.repository.DataflowTaskExecutionDao;
+import org.springframework.cloud.dataflow.server.repository.JdbcDataflowTaskExecutionDao;
+import org.springframework.cloud.task.configuration.TaskProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -62,4 +66,15 @@ public class DataFlowServerConfiguration {
 	public Filter forwardedHeaderFilter() {
 		return new ForwardedHeaderFilter();
 	}
+
+	@Bean
+	public TaskProperties taskProperties() {
+		return new TaskProperties();
+	}
+
+	@Bean
+	DataflowTaskExecutionDao dataflowTaskExecutionDao(DataSource dataSource, TaskProperties taskProperties) {
+		return new JdbcDataflowTaskExecutionDao(dataSource, taskProperties);
+	}
+
 }

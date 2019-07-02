@@ -37,6 +37,7 @@ import org.springframework.cloud.dataflow.server.batch.JobService;
 import org.springframework.cloud.dataflow.server.batch.SimpleJobServiceFactoryBean;
 import org.springframework.cloud.dataflow.server.config.apps.CommonApplicationProperties;
 import org.springframework.cloud.dataflow.server.job.LauncherRepository;
+import org.springframework.cloud.dataflow.server.repository.DataflowTaskExecutionDao;
 import org.springframework.cloud.dataflow.server.repository.TaskDefinitionRepository;
 import org.springframework.cloud.dataflow.server.repository.TaskDeploymentRepository;
 import org.springframework.cloud.dataflow.server.service.LauncherInitializationService;
@@ -157,11 +158,13 @@ public class TaskConfiguration {
 			TaskExecutionInfoService taskExecutionInfoService,
 			TaskDeploymentRepository taskDeploymentRepository,
 			TaskExecutionCreationService taskExecutionRepositoryService,
-			TaskAppDeploymentRequestCreator taskAppDeploymentRequestCreator) {
+			TaskAppDeploymentRequestCreator taskAppDeploymentRequestCreator,
+			TaskExplorer taskExplorer,
+			DataflowTaskExecutionDao dataflowTaskExecutionDao) {
 		return new DefaultTaskExecutionService(
 				launcherRepository, auditRecordService, taskRepository,
 				taskExecutionInfoService, taskDeploymentRepository, taskExecutionRepositoryService,
-				taskAppDeploymentRequestCreator);
+				taskAppDeploymentRequestCreator, taskExplorer, dataflowTaskExecutionDao);
 	}
 
 	@Bean
