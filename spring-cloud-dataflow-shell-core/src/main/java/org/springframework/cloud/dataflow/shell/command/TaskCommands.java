@@ -74,6 +74,7 @@ public class TaskCommands implements CommandMarker {
 	// Deploy Role
 
 	private static final String LAUNCH = "task launch";
+	private static final String STOP = "task execution stop";
 
 	// Destroy Role
 
@@ -106,6 +107,11 @@ public class TaskCommands implements CommandMarker {
 
 	@CliAvailabilityIndicator({ LAUNCH })
 	public boolean availableWithDeployRole() {
+		return dataFlowShell.hasAccess(RoleType.DEPLOY, OpsType.TASK);
+	}
+
+	@CliAvailabilityIndicator({ STOP })
+	public boolean availableWithUnDeployRole() {
 		return dataFlowShell.hasAccess(RoleType.DEPLOY, OpsType.TASK);
 	}
 
@@ -211,6 +217,12 @@ public class TaskCommands implements CommandMarker {
 		}
 		long taskExecutionId = taskOperations().launch(name, propertiesToUse, argumentsToUse);
 		return String.format("Launched task '%s' with execution id %d", name, taskExecutionId);
+	}
+
+	@CliCommand(value = STOP, help = "Stop executing tasks")
+	public String stop(@CliOption(key = { "", "id" }, help = "the task execution id", mandatory = true) String id) {
+		taskOperations().stop(id);
+		return String.format("Request to stop task execution %s has been submitted", id);
 	}
 
 	@CliCommand(value = DESTROY, help = "Destroy an existing task")
