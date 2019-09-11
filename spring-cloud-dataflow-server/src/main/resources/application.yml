@@ -37,6 +37,9 @@ info:
 #     config:
 #        discovery:
 #           enabled: true
+#     dataflow:
+#            task:
+#               schedulerTaskLauncherURL: "docker://springcloud/spring-cloud-dataflow-scheduler-task-launcher:latest"
 #eureka:
 #  client:
 #    serviceUrl:

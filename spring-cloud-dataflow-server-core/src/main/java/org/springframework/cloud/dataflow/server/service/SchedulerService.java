@@ -59,6 +59,13 @@ public interface SchedulerService {
 	void unschedule(String scheduleName);
 
 	/**
+	 *  Unschedule all schedules that have been created for this task.
+	 *
+	 * @param taskDefinitionName the name of the task definition.
+	 */
+	void unscheduleForTaskDefinition(String taskDefinitionName);
+
+	/**
 	 * List all of the Schedules associated with the provided TaskDefinition.
 	 *
 	 * @param pageable Establish the pagination setup for the result set.
