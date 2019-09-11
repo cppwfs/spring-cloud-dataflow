@@ -41,8 +41,25 @@ public class TaskConfigurationProperties {
 	@NotBlank
 	private String composedTaskRunnerName = "composed-task-runner";
 
+	/**
+	 * The schedule application name to be used for the scheduler task launcher.
+	 */
 	@NotBlank
 	private String schedulerTaskLauncher = "scheduler-task-launcher";
+
+	/**
+	 * The URI of the resource to be used for launching apps via a schedule.
+	 */
+	private String schedulerTaskLauncherURL = "docker://springcloud/schedulertasklauncher:latest";
+	/**
+	 * The prefix to be applied to schedule names.
+	 */
+	private String scheduleNamePrefix = "scdf-";
+
+	/**
+	 * The prefix to attach to the application properties to be sent to the schedule task launcher.
+	 */
+	private String taskLauncherPrefix = "tasklauncher.";
 
 	public String getComposedTaskRunnerName() {
 		return composedTaskRunnerName;
@@ -58,5 +75,29 @@ public class TaskConfigurationProperties {
 
 	public void setSchedulerTaskLauncher(String schedulerTaskLauncher) {
 		this.schedulerTaskLauncher = schedulerTaskLauncher;
+	}
+
+	public String getScheduleNamePrefix() {
+		return scheduleNamePrefix;
+	}
+
+	public void setScheduleNamePrefix(String scheduleNamePrefix) {
+		this.scheduleNamePrefix = scheduleNamePrefix;
+	}
+
+	public String getTaskLauncherPrefix() {
+		return taskLauncherPrefix;
+	}
+
+	public void setTaskLauncherPrefix(String taskLauncherPrefix) {
+		this.taskLauncherPrefix = taskLauncherPrefix;
+	}
+
+	public String getSchedulerTaskLauncherURL() {
+		return schedulerTaskLauncherURL;
+	}
+
+	public void setSchedulerTaskLauncherURL(String schedulerTaskLauncherURL) {
+		this.schedulerTaskLauncherURL = schedulerTaskLauncherURL;
 	}
 }

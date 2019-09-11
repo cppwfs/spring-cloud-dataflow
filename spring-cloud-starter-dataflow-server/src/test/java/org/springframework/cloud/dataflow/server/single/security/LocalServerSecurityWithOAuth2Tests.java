@@ -270,9 +270,9 @@ public class LocalServerSecurityWithOAuth2Tests {
 			.perform(get("/security/info").header("Authorization", "bearer " + accessTokenAsString)).andDo(print())
 			.andExpect(status().isOk());
 
-		localDataflowResource.getMockMvc()
-			.perform(get("/logout").header("Authorization", "bearer " + accessTokenAsString)).andDo(print())
-			.andExpect(status().isNoContent());
+		//		localDataflowResource.getMockMvc()
+		//			.perform(get("/logout").header("Authorization", "bearer " + accessTokenAsString)).andDo(print())
+		//			.andExpect(status().isNoContent());
 
 		localDataflowResource.getMockMvc()
 			.perform(get("/security/info").header("Authorization", "bearer " + accessTokenAsString)).andDo(print())

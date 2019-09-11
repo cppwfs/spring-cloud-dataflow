@@ -125,7 +125,8 @@ public class TaskServiceUtils {
 			builder.setProperty("spring.datasource.password", dataSourceProperties.getPassword());
 		}
 		builder.setProperty("spring.datasource.driverClassName", dataSourceProperties.getDriverClassName());
-
+		builder.setTaskName(taskDefinition.getTaskName());
+		builder.setDslText(taskDefinition.getDslText());
 		return builder.build();
 	}
 
@@ -137,7 +138,7 @@ public class TaskServiceUtils {
 	 */
 	public static Map<String, String> extractAppProperties(String name, Map<String, String> taskDeploymentProperties) {
 		Assert.hasText(name, "name must not be empty or null");
-		Assert.notNull(taskDeploymentProperties, "taskDeploymentProoperties must not be null");
+		Assert.notNull(taskDeploymentProperties, "taskDeploymentProperties must not be null");
 		return extractPropertiesByPrefix("app", name, taskDeploymentProperties);
 	}
 

@@ -159,6 +159,20 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 	}
 
 	@Bean
+	public DataflowTaskExecutionMetadataDao dataflowTaskExecutionMetadataDao(DataSource dataSource, ApplicationContext context) {
+		DataFieldMaxValueIncrementerFactory incrementerFactory = new DefaultDataFieldMaxValueIncrementerFactory(dataSource);
+		String databaseType;
+		try {
+			databaseType = DatabaseType.fromMetaData(dataSource).name();
+		}
+		catch (MetaDataAccessException e) {
+			throw new IllegalStateException(e);
+		}
+		return new JdbcDataflowTaskExecutionMetadataDao(dataSource, incrementerFactory.getIncrementer(databaseType,
+				"task_execution_metadata_seq"), context);
+	}
+
+	@Bean
 	public DataflowJobExecutionDao dataflowJobExecutionDao(DataSource dataSource) {
 		return new JdbcDataflowJobExecutionDao(dataSource, AbstractJdbcBatchMetadataDao.DEFAULT_TABLE_PREFIX);
 	}
@@ -216,12 +230,14 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 			TaskDeploymentRepository taskDeploymentRepository,
 			AuditRecordService auditRecordService,
 			DataflowTaskExecutionDao dataflowTaskExecutionDao,
-			DataflowJobExecutionDao dataflowJobExecutionDao) {
+			DataflowJobExecutionDao dataflowJobExecutionDao,
+			SchedulerService schedulerService) {
 		return new DefaultTaskDeleteService(taskExplorer, launcherRepository, taskDefinitionRepository,
 				taskDeploymentRepository,
 				auditRecordService,
 				dataflowTaskExecutionDao,
-				dataflowJobExecutionDao);
+				dataflowJobExecutionDao,
+				schedulerService);
 	}
 
 	@Bean
@@ -302,19 +318,5 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 	@Bean
 	public Scheduler scheduler() {
 		return new SimpleTestScheduler();
-	}
-
-	@Bean
-	public DataflowTaskExecutionMetadataDao dataflowTaskExecutionMetadataDao(DataSource dataSource, ApplicationContext context) {
-		DataFieldMaxValueIncrementerFactory incrementerFactory = new DefaultDataFieldMaxValueIncrementerFactory(dataSource);
-		String databaseType;
-		try {
-			databaseType = DatabaseType.fromMetaData(dataSource).name();
-		}
-		catch (MetaDataAccessException e) {
-			throw new IllegalStateException(e);
-		}
-		return new JdbcDataflowTaskExecutionMetadataDao(dataSource, incrementerFactory.getIncrementer(databaseType,
-				"task_execution_metadata_seq"), context);
 	}
 }
