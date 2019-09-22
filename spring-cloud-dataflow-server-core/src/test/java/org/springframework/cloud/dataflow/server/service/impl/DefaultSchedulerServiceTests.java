@@ -176,6 +176,24 @@ public class DefaultSchedulerServiceTests {
 	}
 
 	@Test
+	public void testRemoveSchedulesForTaskDefinitionName() {
+		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+		schedulerService.schedule(BASE_SCHEDULE_NAME + 2,
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+		schedulerService.schedule(BASE_SCHEDULE_NAME + 4,
+				CTR_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+		validateSchedulesCount(4);
+		schedulerService.unscheduleForTaskDefinition(BASE_DEFINITION_NAME);
+		validateSchedulesCount(1);
+		schedulerService.unscheduleForTaskDefinition(CTR_DEFINITION_NAME);
+		validateSchedulesCount(0);
+
+	}
+
+	@Test
 	public void testUnschedule(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
 				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
