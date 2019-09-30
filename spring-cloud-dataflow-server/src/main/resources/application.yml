@@ -39,7 +39,7 @@ info:
 #           enabled: true
 #     dataflow:
 #            task:
-#               schedulerTaskLauncherURL: "docker://springcloud/spring-cloud-dataflow-scheduler-task-launcher:latest"
+#               schedulerTaskLauncherURL: "maven://org.springframework.cloud:spring-cloud-dataflow-scheduler-task-launcher:2.3.0.BUILD-SNAPSHOT"
 #eureka:
 #  client:
 #    serviceUrl:

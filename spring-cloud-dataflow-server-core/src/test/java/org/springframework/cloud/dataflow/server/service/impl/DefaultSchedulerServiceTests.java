@@ -189,7 +189,6 @@ public class DefaultSchedulerServiceTests {
 		validateSchedulesCount(1);
 		schedulerService.unscheduleForTaskDefinition(CTR_DEFINITION_NAME);
 		validateSchedulesCount(0);
-
 	}
 
 	@Test
@@ -209,7 +208,6 @@ public class DefaultSchedulerServiceTests {
 		validateSchedulesCount(2);
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1));
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3));
-
 	}
 
 	private String getFullyQualifiedScheduleName(String taskDefinitionName, String scheduleName) {

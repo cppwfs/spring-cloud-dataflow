@@ -272,7 +272,7 @@ public abstract class BaseDocumentation {
 				return null;
 			}
 
-			public List<ScheduleInfo> getSampleList() {
+			private List<ScheduleInfo> getSampleList() {
 				List<ScheduleInfo> result = new ArrayList<>();
 				ScheduleInfo scheduleInfo = new ScheduleInfo();
 				scheduleInfo.setScheduleName("FOO");

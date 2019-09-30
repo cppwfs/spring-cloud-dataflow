@@ -50,7 +50,7 @@ public class TaskConfigurationProperties {
 	/**
 	 * The URI of the resource to be used for launching apps via a schedule.
 	 */
-	private String schedulerTaskLauncherUrl = "https://raw.githubusercontent.com/cppwfs/binary/master/spring-cloud-dataflow-scheduler-task-launcher-2.3.0.BUILD-SNAPSHOT.jar";
+	private String schedulerTaskLauncherUrl = "maven://org.springframework.cloud:spring-cloud-dataflow-scheduler-task-launcher:2.3.0.BUILD-SNAPSHOT";
 	/**
 	 * The prefix to be applied to schedule names.
 	 */
