@@ -145,13 +145,13 @@ public class DefaultSchedulerServiceTests {
 	@Test
 	public void testSchedule(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME, BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME));
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME), true);
 	}
 
 	@Test
 	public void testScheduleCTR(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME, CTR_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME, CTR_DEFINITION_NAME));
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME, CTR_DEFINITION_NAME), true);
 	}
 
 	@Test(expected = CreateScheduleException.class)
@@ -171,9 +171,9 @@ public class DefaultSchedulerServiceTests {
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
 				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
 
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1));
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 2));
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3));
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1), true);
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 2), true);
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3), true);
 	}
 
 	@Test
@@ -202,9 +202,9 @@ public class DefaultSchedulerServiceTests {
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
 				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
 
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1));
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 2));
-		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3));
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1), true);
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 2), true);
+		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3), true);
 
 		schedulerService.unschedule(BASE_SCHEDULE_NAME + 2);
 		validateSchedulesCount(2);
@@ -333,14 +333,24 @@ public class DefaultSchedulerServiceTests {
 	}
 
 	private void verifyScheduleExistsInScheduler(ScheduleInfo scheduleInfo) {
+		 verifyScheduleExistsInScheduler(scheduleInfo, false);
+	}
+
+	private void verifyScheduleExistsInScheduler(ScheduleInfo scheduleInfo, boolean testForScheduleName) {
 		List<ScheduleInfo> scheduleInfos = ((SimpleTestScheduler)simpleTestScheduler).getSchedules();
 		scheduleInfos = scheduleInfos.stream().filter(s -> s.getScheduleName().
 				equals(scheduleInfo.getScheduleName())).
 				collect(Collectors.toList());
 
 		assertThat(scheduleInfos.size()).isEqualTo(1);
-		assertThat(scheduleInfos.get(0).getTaskDefinitionName()).isEqualTo(
-				scheduleInfo.getTaskDefinitionName());
+		if(testForScheduleName) {
+			assertThat(scheduleInfos.get(0).getTaskDefinitionName()).isEqualTo(
+					scheduleInfo.getScheduleName());
+		}
+		else {
+			assertThat(scheduleInfos.get(0).getTaskDefinitionName()).isEqualTo(
+					scheduleInfo.getTaskDefinitionName());
+		}
 
 		for(String key: scheduleInfo.getScheduleProperties().keySet()) {
 			assertThat(scheduleInfos.get(0).getScheduleProperties().

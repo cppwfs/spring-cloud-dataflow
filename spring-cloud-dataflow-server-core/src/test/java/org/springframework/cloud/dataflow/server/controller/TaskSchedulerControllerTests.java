@@ -174,7 +174,7 @@ public class TaskSchedulerControllerTests {
 		assertEquals(1, simpleTestScheduler.list().size());
 		ScheduleInfo scheduleInfo = simpleTestScheduler.list().get(0);
 		assertEquals("mySchedule", scheduleInfo.getScheduleName());
-		assertEquals(1, scheduleInfo.getScheduleProperties().size());
+		assertEquals(2, scheduleInfo.getScheduleProperties().size());
 		assertEquals("* * * * *", scheduleInfo.getScheduleProperties().get("spring.cloud.scheduler.cron.expression"));
 
 		final List<AuditRecord> auditRecords = auditRecordRepository.findAll();
@@ -186,7 +186,7 @@ public class TaskSchedulerControllerTests {
 		assertEquals(AuditActionType.CREATE, auditRecord.getAuditAction());
 		assertEquals("mySchedule", auditRecord.getCorrelationId());
 
-		assertEquals("{\"commandlineArguments\":[\"--spring.cloud.scheduler.task.launcher.taskName=testDefinition\"],\"taskDefinitionName\":\"testDefinition\","
+		assertEquals("{\"commandlineArguments\":[\"--spring.cloud.scheduler.task.launcher.taskName=testDefinition\"],\"taskDefinitionName\":\"mySchedule\","
 				+ "\"taskDefinitionProperties\":{},"
 				+ "\"deploymentProperties\":{}}", auditRecord.getAuditData());
 
@@ -197,7 +197,7 @@ public class TaskSchedulerControllerTests {
 		String auditData = createScheduleWithArguments("argument1=foo password=secret");
 
 		assertEquals(
-				"{\"commandlineArguments\":[\"argument1=foo\",\"password=******\",\"--spring.cloud.scheduler.task.launcher.taskName=testDefinition\"],\"taskDefinitionName\":\"testDefinition\","
+				"{\"commandlineArguments\":[\"argument1=foo\",\"password=******\",\"--spring.cloud.scheduler.task.launcher.taskName=testDefinition\"],\"taskDefinitionName\":\"mySchedule\","
 						+ "\"taskDefinitionProperties\":{\"tasklauncher.app.testApp.prop1\":\"foo\",\"tasklauncher.app.testApp.prop2.secret\":\"******\"},"
 						+ "\"deploymentProperties\":{\"spring.cloud.deployer.prop1.secret\":\"******\",\"spring.cloud.deployer.prop2.password\":\"******\"}}",
 				auditData);
@@ -208,7 +208,7 @@ public class TaskSchedulerControllerTests {
 		String auditData = createScheduleWithArguments("argument1=foo spring.profiles.active=k8s,master argument3=bar");
 
 		assertEquals(
-				"{\"commandlineArguments\":[\"argument1=foo\",\"spring.profiles.active=k8s,master\",\"argument3=bar\",\"--spring.cloud.scheduler.task.launcher.taskName=testDefinition\"],\"taskDefinitionName\":\"testDefinition\","
+				"{\"commandlineArguments\":[\"argument1=foo\",\"spring.profiles.active=k8s,master\",\"argument3=bar\",\"--spring.cloud.scheduler.task.launcher.taskName=testDefinition\"],\"taskDefinitionName\":\"mySchedule\","
 						+ "\"taskDefinitionProperties\":{\"tasklauncher.app.testApp.prop1\":\"foo\",\"tasklauncher.app.testApp.prop2.secret\":\"******\"},"
 						+ "\"deploymentProperties\":{\"spring.cloud.deployer.prop1.secret\":\"******\",\"spring.cloud.deployer.prop2.password\":\"******\"}}",
 				auditData);
@@ -227,7 +227,7 @@ public class TaskSchedulerControllerTests {
 		assertEquals(1, simpleTestScheduler.list().size());
 		ScheduleInfo scheduleInfo = simpleTestScheduler.list().get(0);
 		assertEquals("mySchedule", scheduleInfo.getScheduleName());
-		assertEquals(1, scheduleInfo.getScheduleProperties().size());
+		assertEquals(2, scheduleInfo.getScheduleProperties().size());
 		assertEquals("* * * * *", scheduleInfo.getScheduleProperties().get("spring.cloud.scheduler.cron.expression"));
 
 		final List<AuditRecord> auditRecords = auditRecordRepository.findAll();

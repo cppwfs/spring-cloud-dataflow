@@ -68,6 +68,7 @@ public class DefaultSchedulerService implements SchedulerService {
 
 	private final static String APP_PREFIX = "app.";
 	private final static String DATA_FLOW_URI_KEY = "spring.cloud.dataflow.client.serverUri";
+	private final static String SCHEDULER_PREFIX = "spring.cloud.scheduler.";
 
 	private CommonApplicationProperties commonApplicationProperties;
 	private TaskPlatform taskPlatform;
@@ -185,11 +186,13 @@ public class DefaultSchedulerService implements SchedulerService {
 		AppDefinition revisedDefinition =
 				TaskServiceUtils.mergeAndExpandAppProperties(taskDefinition, metadataResource,
 						tagAppProperties(null, appProperties), whitelistProperties);
-		revisedDefinition = new AppDefinition(taskDefinitionName,
+		revisedDefinition = new AppDefinition(scheduleName,
 				cleanseTaskProperties(revisedDefinition.getProperties()));
 
 		DeploymentPropertiesUtils.validateDeploymentProperties(taskDeploymentProperties);
 		taskDeploymentProperties = extractAndQualifySchedulerProperties(taskDeploymentProperties);
+		taskDeploymentProperties.put(Scheduler.SCHEDULER_ALTERNATE_TASK_NAME, taskDefinitionName);
+
 		List<String> revisedCommandLineArgs = new ArrayList<>(commandLineArgs);
 		revisedCommandLineArgs.add("--spring.cloud.scheduler.task.launcher.taskName=" + taskDefinitionName);
 		ScheduleRequest scheduleRequest = new ScheduleRequest(revisedDefinition, taskDeploymentProperties,
@@ -291,7 +294,7 @@ public class DefaultSchedulerService implements SchedulerService {
 	@Override
 	public List<ScheduleInfo> list(String taskDefinitionName) {
 		Launcher launcher = getDefaultLauncher();
-		List<ScheduleInfo> list = launcher.getScheduler().list();
+		List<ScheduleInfo> list =  updateTaskDefinitionNames(launcher.getScheduler().list());
 		List<ScheduleInfo> result = new ArrayList<>();
 		for(ScheduleInfo scheduleInfo: list) {
 			if(scheduleInfo.getTaskDefinitionName().equals(taskDefinitionName)) {
@@ -305,8 +308,8 @@ public class DefaultSchedulerService implements SchedulerService {
 	@Override
 	public List<ScheduleInfo> list() {
 		Launcher launcher = getDefaultLauncher();
-		return limitScheduleInfoResultSize(launcher.getScheduler().list(),
-				this.schedulerServiceProperties.getMaxSchedulesReturned());
+		return updateTaskDefinitionNames(limitScheduleInfoResultSize(launcher.getScheduler().list(),
+				this.schedulerServiceProperties.getMaxSchedulesReturned()));
 	}
 
 	@Override
@@ -315,7 +318,18 @@ public class DefaultSchedulerService implements SchedulerService {
 				.filter(scheduleInfo -> scheduleInfo.getScheduleName().equals(scheduleName))
 				.collect(Collectors.toList());
 		Assert.isTrue(!(result.size() > 1), "more than one schedule was returned for scheduleName, should only be one");
+		result = updateTaskDefinitionNames(result);
 		return result.size() > 0 ? result.get(0) : null;
+	}
+
+	private List<ScheduleInfo> updateTaskDefinitionNames(List<ScheduleInfo> scheduleInfos) {
+		for(ScheduleInfo scheduleInfo : scheduleInfos) {
+			String taskDefinitionName = scheduleInfo.getScheduleProperties().get(Scheduler.SCHEDULER_ALTERNATE_TASK_NAME);
+			if(taskDefinitionName != null) {
+				scheduleInfo.setTaskDefinitionName(taskDefinitionName);
+			}
+		}
+		return scheduleInfos;
 	}
 
 	private List<ScheduleInfo> limitScheduleInfoResultSize(List<ScheduleInfo> resultSet,
@@ -340,7 +354,7 @@ public class DefaultSchedulerService implements SchedulerService {
 
 		Map<String, String> result = new TreeMap<>(input).entrySet().stream()
 				.filter(kv -> kv.getKey().startsWith(prefix))
-				.collect(Collectors.toMap(kv -> "spring.cloud.scheduler." + kv.getKey().substring(prefixLength), kv -> kv.getValue(),
+				.collect(Collectors.toMap(kv -> SCHEDULER_PREFIX + kv.getKey().substring(prefixLength), kv -> kv.getValue(),
 						(fromWildcard, fromApp) -> fromApp));
 
 		return result;
