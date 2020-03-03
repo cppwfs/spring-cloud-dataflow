@@ -43,6 +43,18 @@ public class SchedulerTaskLauncherPropertiesTests {
 		Assert.assertEquals(PROPERTY_PREFIX, properties.getTaskLauncherPropertyPrefix());
 		Assert.assertEquals(PLATFORM_NAME, properties.getPlatformName());
 		Assert.assertEquals(DATAFLOW_SERVER_URI, properties.getDataflowServerUri());
+
+		Assert.assertEquals(true, properties.isOwningJobNameEnabled());
+		properties.setOwningJobNameEnabled(false);
+		Assert.assertEquals(false, properties.isOwningJobNameEnabled());
+		Assert.assertEquals(0, properties.getMaxWaitTime());
+		properties.setMaxWaitTime(10001);
+		Assert.assertEquals(10001, properties.getMaxWaitTime());
+		Assert.assertEquals(10000, properties.getIntervalTimeBetweenChecks());
+		properties.setIntervalTimeBetweenChecks(1);
+		Assert.assertEquals(1, properties.getIntervalTimeBetweenChecks());
+
+
 	}
 
 }

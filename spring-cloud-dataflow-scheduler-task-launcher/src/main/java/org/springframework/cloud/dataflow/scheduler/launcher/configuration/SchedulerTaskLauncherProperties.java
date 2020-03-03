@@ -36,6 +36,12 @@ public class SchedulerTaskLauncherProperties {
 
 	private String taskLauncherPropertyPrefix = "tasklauncher";
 
+	private long intervalTimeBetweenChecks = 10000;
+
+	private long maxWaitTime = 0;
+
+	private boolean owningJobNameEnabled = true;
+
 	public String getPlatformName() {
 		return platformName;
 	}
@@ -66,6 +72,30 @@ public class SchedulerTaskLauncherProperties {
 
 	public void setTaskLauncherPropertyPrefix(String taskLauncherPropertyPrefix) {
 		this.taskLauncherPropertyPrefix = taskLauncherPropertyPrefix;
+	}
+
+	public long getIntervalTimeBetweenChecks() {
+		return intervalTimeBetweenChecks;
+	}
+
+	public void setIntervalTimeBetweenChecks(long intervalTimeBetweenChecks) {
+		this.intervalTimeBetweenChecks = intervalTimeBetweenChecks;
+	}
+
+	public long getMaxWaitTime() {
+		return maxWaitTime;
+	}
+
+	public void setMaxWaitTime(long maxWaitTime) {
+		this.maxWaitTime = maxWaitTime;
+	}
+
+	public boolean isOwningJobNameEnabled() {
+		return owningJobNameEnabled;
+	}
+
+	public void setOwningJobNameEnabled(boolean owningJobNameEnabled) {
+		this.owningJobNameEnabled = owningJobNameEnabled;
 	}
 }
 

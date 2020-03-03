@@ -119,7 +119,7 @@
 				<configuration>
 				  <images>
 					<image>
-					  <name>springcloud/${project.artifactId}</name>
+					  <name>cppwfs/${project.artifactId}</name>
 					  <build>
 						  <tags>
 							  <tag>latest</tag>

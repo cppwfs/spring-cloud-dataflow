@@ -26,9 +26,11 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.batch.core.UnexpectedJobExecutionException;
 import org.springframework.cloud.dataflow.rest.client.DataFlowClientException;
 import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.cloud.dataflow.rest.resource.LauncherResource;
+import org.springframework.cloud.dataflow.rest.resource.TaskExecutionResource;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
@@ -43,6 +45,9 @@ import org.springframework.util.StringUtils;
  * @author Glenn Renfro
  **/
 public class SchedulerTaskLauncher {
+	public static final String OWNING_JOB_DEPLOYER_PROPERTY = "deployer.*.kubernetes.OWNING_JOB_NAME";
+
+	public static final String OWNING_JOB_NAME_KEY = "OWNING_JOB_NAME";
 
 	static final String TASK_PLATFORM_NAME = "spring.cloud.dataflow.task.platformName";
 
@@ -80,12 +85,51 @@ public class SchedulerTaskLauncher {
 		verifyTaskPlatform(this.taskOperations);
 		List<String> argList = extractLaunchArgs(args);
 		try {
+			long timeout = System.currentTimeMillis() +
+					this.schedulerTaskLauncherProperties.getMaxWaitTime();
 			log.info(String.format("Launching Task %s on the %s platform.", this.taskName, this.platformName));
-			this.taskOperations.launch(this.taskName, enrichDeploymentProperties(getDeploymentProperties()), argList, null);
+			long taskExecutionId = this.taskOperations.launch(this.taskName, enrichDeploymentProperties(getDeploymentProperties()), argList, null);
+			if(isOwningJobNameSpecified()) {
+				log.info(String.format("%s was detected.  Waiting for Task to complete before terminating SchedulerTaskLauncher", OWNING_JOB_NAME_KEY));
+			}
+			while( isOwningJobNameSpecified() && !waitForLaunchToComplete(timeout, taskExecutionId) ) {
+				log.debug("Launched application is still running.  Will recheck.");
+			}
 		}
 		catch (DataFlowClientException e) {
 			throw new SchedulerTaskLauncherException(e);
 		}
+	}
+
+	private boolean waitForLaunchToComplete(long timeout, long executionId) {
+		try {
+			Thread.sleep(this.schedulerTaskLauncherProperties.getIntervalTimeBetweenChecks());
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+
+		TaskExecutionResource taskExecution =
+				this.taskOperations.taskExecutionStatus(executionId);
+		if (taskExecution != null && taskExecution.getEndTime() != null) {
+			if (taskExecution.getExitCode() == null) {
+				throw new UnexpectedJobExecutionException("Task returned a null exit code.");
+			}
+			else if (taskExecution.getExitCode() != 0) {
+				throw new UnexpectedJobExecutionException("Task returned a non zero exit code.");
+			}
+			else {
+				return true;
+			}
+		}
+		if (this.schedulerTaskLauncherProperties.getMaxWaitTime() > 0 &&
+				System.currentTimeMillis() > timeout) {
+			throw new SchedulerTaskLauncherException(String.format(
+					"Timeout occurred while processing task with Execution Id %s",
+					executionId));
+		}
+		return false;
 	}
 
 	private List<String> extractLaunchArgs(String... args) {
@@ -105,6 +149,9 @@ public class SchedulerTaskLauncher {
 		Map<String, String> enrichedProperties = new HashMap<>(deploymentProperties);
 		if (!deploymentProperties.containsKey(TASK_PLATFORM_NAME)) {
 			enrichedProperties.put(TASK_PLATFORM_NAME, this.platformName);
+		}
+		if (isOwningJobNameSpecified()) {
+			enrichedProperties.put(OWNING_JOB_DEPLOYER_PROPERTY, this.environment.getProperty(OWNING_JOB_NAME_KEY));
 		}
 		return enrichedProperties;
 	}
@@ -150,6 +197,10 @@ public class SchedulerTaskLauncher {
 				"The task launcher's platform name '%s' does not match one of the Data Flow server's configured task "
 						+ "platforms: [%s].",
 				this.platformName, StringUtils.collectionToCommaDelimitedString(currentPlatforms)));
+	}
+
+	private boolean isOwningJobNameSpecified() {
+		return (this.environment.getProperty(OWNING_JOB_NAME_KEY) != null);
 	}
 
 }

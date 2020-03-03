@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -71,6 +70,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -181,13 +181,48 @@ public class DefaultSchedulerServiceTests {
 		assertThat(scheduleInfos.get(0).getScheduleName()).isEqualTo("mytaskscheduleab-scdf-mytaskdefinition");
 	}
 
+	@Test
+	public void testScheduleOnKuberenetesPlatformSendOwnerEnabled() {
+		Scheduler scheduler = getMockedSchedulerForPlatform("Kubernetes");
+		final ArgumentCaptor<ScheduleRequest> argument = ArgumentCaptor.forClass(ScheduleRequest.class);
+		verify(scheduler, times(1)).schedule(argument.capture());
+		String owningJobFlag = argument.getValue().getDeploymentProperties().get("spring.cloud.deployer.kubernetes.SEND_OWNING_JOB_NAME_ENABLED");
+		assertThat(owningJobFlag).isEqualTo("true");
+	}
+
+	@Test
+	public void testScheduleOnCFPlatformSendOwnerDisabled() {
+		Scheduler scheduler = getMockedSchedulerForPlatform("CloudFoundry");
+		final ArgumentCaptor<ScheduleRequest> argument = ArgumentCaptor.forClass(ScheduleRequest.class);
+		verify(scheduler, times(1)).schedule(argument.capture());
+		String owningJobFlag = argument.getValue().getDeploymentProperties().get("spring.cloud.deployer.kubernetes.SEND_OWNING_JOB_NAME_ENABLED");
+		assertThat(owningJobFlag).isNull();
+	}
+
+	private Scheduler getMockedSchedulerForPlatform(String platformName) {
+		Launcher launcher = mock(Launcher.class);
+		when(launcher.getType()).thenReturn(platformName);
+		when(launcher.getName()).thenReturn("default");
+		when(launcher.getTaskLauncher()).thenReturn(mock(TaskLauncher.class));
+		Scheduler scheduler = mock(Scheduler.class);
+
+		when(launcher.getScheduler()).thenReturn(scheduler);
+		SchedulerService testSchedulerService = getMockedSchedulerService(launcher);
+		testSchedulerService.schedule(BASE_SCHEDULE_NAME, BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+		return scheduler;
+	}
+
 	private SchedulerService getMockedKubernetesSchedulerService() {
-		Launcher launcher = new Launcher("default", "Kubernetes", Mockito.mock(TaskLauncher.class), scheduler);
+		Launcher launcher = new Launcher("default", "Kubernetes", mock(TaskLauncher.class), scheduler);
+		return getMockedSchedulerService(launcher);
+	}
+
+	private SchedulerService getMockedSchedulerService(Launcher launcher) {
 		List<Launcher> launchers = new ArrayList<>();
 		launchers.add(launcher);
 		TaskPlatform taskPlatform = new TaskPlatform("testTaskPlatform", launchers);
 
-		return  new DefaultSchedulerService(this.commonApplicationProperties,
+		return new DefaultSchedulerService(this.commonApplicationProperties,
 				taskPlatform, this.taskDefinitionRepository,
 				this.appRegistry, this.resourceLoader,
 				this.taskConfigurationProperties, null,

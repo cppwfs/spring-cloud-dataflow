@@ -18,6 +18,7 @@ package org.springframework.cloud.dataflow.scheduler.launcher;
 
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -33,17 +34,20 @@ import org.springframework.cloud.dataflow.core.Launcher;
 import org.springframework.cloud.dataflow.rest.client.DataFlowClientException;
 import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.cloud.dataflow.rest.resource.LauncherResource;
+import org.springframework.cloud.dataflow.rest.resource.TaskExecutionResource;
 import org.springframework.cloud.dataflow.scheduler.launcher.configuration.SchedulerTaskLauncher;
 import org.springframework.cloud.dataflow.scheduler.launcher.configuration.SchedulerTaskLauncherException;
 import org.springframework.cloud.dataflow.scheduler.launcher.configuration.SchedulerTaskLauncherProperties;
 import org.springframework.cloud.deployer.spi.scheduler.Scheduler;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
+import org.springframework.cloud.task.repository.TaskExecution;
 import org.springframework.core.env.Environment;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.mediatype.vnderrors.VndErrors;
 import org.springframework.mock.env.MockEnvironment;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -62,6 +66,11 @@ public class SchedulerTaskLauncherTests {
 		LauncherResource resource = new LauncherResource(launcher);
 		this.taskOperations = Mockito.mock(TaskOperations.class);
 		Mockito.when(this.taskOperations.listPlatforms()).thenReturn(new PagedModel(Collections.singletonList(resource), null,Collections.emptyList()));
+		TaskExecution taskExecution = new TaskExecution();
+		taskExecution.setEndTime(new Date());
+		taskExecution.setExitCode(0);
+		TaskExecutionResource taskExecutionResource = new TaskExecutionResource(taskExecution);
+		Mockito.when(this.taskOperations.taskExecutionStatus(anyLong())).thenReturn(taskExecutionResource);
 	}
 
 	@Test
@@ -90,6 +99,32 @@ public class SchedulerTaskLauncherTests {
 		verify(this.taskOperations, times(1)).launch(argument.capture(), Mockito.any(), Mockito.any(), Mockito.any());
 		Assert.assertEquals(TASK_NAME, argument.getAllValues().get(0));
 	}
+
+	@Test
+	public void testValidWithOwner() {
+		final String JOB_NAME = "JOB-abcdef";
+		final ArgumentCaptor<Map<String, String>> propertiesArgument = ArgumentCaptor.forClass(Map.class);
+		SchedulerTaskLauncherProperties schedulerTaskLauncherProperties = new SchedulerTaskLauncherProperties();
+		MockEnvironment mockEnvironment = new MockEnvironment();
+		mockEnvironment.setProperty(SchedulerTaskLauncher.OWNING_JOB_NAME_KEY, JOB_NAME);
+		SchedulerTaskLauncher schedulerTaskLauncher = getSchedulerTaskLauncher(schedulerTaskLauncherProperties, mockEnvironment);
+		schedulerTaskLauncher.launchTask();
+
+		verify(this.taskOperations, times(1)).launch(Mockito.any(), propertiesArgument.capture(), Mockito.any(), Mockito.any());
+		Assert.assertNotNull(propertiesArgument.getValue());
+		Assert.assertEquals(JOB_NAME, propertiesArgument.getValue().get(SchedulerTaskLauncher.OWNING_JOB_DEPLOYER_PROPERTY));
+	}
+	@Test
+	public void testValidWithNoOwner() {
+		final ArgumentCaptor<Map<String, String>> propertiesArgument = ArgumentCaptor.forClass(Map.class);
+		SchedulerTaskLauncherProperties schedulerTaskLauncherProperties = new SchedulerTaskLauncherProperties();
+		SchedulerTaskLauncher schedulerTaskLauncher = getSchedulerTaskLauncher(schedulerTaskLauncherProperties, new MockEnvironment());
+		schedulerTaskLauncher.launchTask();
+
+		verify(this.taskOperations, times(1)).launch(Mockito.any(), propertiesArgument.capture(), Mockito.any(), Mockito.any());
+		Assert.assertNull(propertiesArgument.getValue().get(SchedulerTaskLauncher.OWNING_JOB_DEPLOYER_PROPERTY));
+	}
+
 
 	@Test
 	public void testTaskNameNotProvided() {

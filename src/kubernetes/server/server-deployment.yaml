@@ -16,10 +16,9 @@ spec:
     spec:
       containers:
       - name: scdf-server
-        image: springcloud/spring-cloud-dataflow-server:2.5.0.BUILD-SNAPSHOT
-        imagePullPolicy: Always
+        image: cppwfs/spring-cloud-dataflow-server:2.5.0.BUILD-SNAPSHOT
         ports:
-        - containerPort: 80
+        - containerPort: 5005
         resources:
           limits:
             cpu: 1.0
@@ -28,6 +27,8 @@ spec:
             cpu: 0.5
             memory: 1024Mi
         env:
+        - name: JAVA_TOOL_OPTIONS
+          value: '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'
         - name: KUBERNETES_NAMESPACE
           valueFrom:
             fieldRef:
@@ -52,7 +53,7 @@ spec:
           value: 'http://${SCDF_SERVER_SERVICE_HOST}:${SCDF_SERVER_SERVICE_PORT}'
           # Provide the Skipper service location
         - name: SPRING_CLOUD_SKIPPER_CLIENT_SERVER_URI
-          value: 'http://${SKIPPER_SERVICE_HOST}:${SKIPPER_SERVICE_PORT}/api'
+          value: 'http://192.168.64.3:30074/api'
           # Add Maven repo for metadata artifact resolution for all stream apps
         - name: SPRING_APPLICATION_JSON
           value: "{ \"maven\": { \"local-repository\": null, \"remote-repositories\": { \"repo1\": { \"url\": \"https://repo.spring.io/libs-snapshot\"} } } }"
