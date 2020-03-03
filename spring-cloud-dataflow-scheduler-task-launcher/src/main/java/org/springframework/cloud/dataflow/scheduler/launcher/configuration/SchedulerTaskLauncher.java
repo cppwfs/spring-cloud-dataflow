@@ -26,9 +26,11 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.batch.core.UnexpectedJobExecutionException;
 import org.springframework.cloud.dataflow.rest.client.DataFlowClientException;
 import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.cloud.dataflow.rest.resource.LauncherResource;
+import org.springframework.cloud.dataflow.rest.resource.TaskExecutionResource;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
@@ -80,12 +82,49 @@ public class SchedulerTaskLauncher {
 		verifyTaskPlatform(this.taskOperations);
 		List<String> argList = extractLaunchArgs(args);
 		try {
+			long timeout = System.currentTimeMillis() +
+					this.schedulerTaskLauncherProperties.getMaxWaitTime();
 			log.info(String.format("Launching Task %s on the %s platform.", this.taskName, this.platformName));
-			this.taskOperations.launch(this.taskName, enrichDeploymentProperties(getDeploymentProperties()), argList, null);
+			long taskExecutionId = this.taskOperations.launch(this.taskName, enrichDeploymentProperties(getDeploymentProperties()), argList, null);
+			while( !waitForLaunchToComplete(timeout, taskExecutionId) ) {
+				System.out.println("WAITING....");
+			}
 		}
 		catch (DataFlowClientException e) {
 			throw new SchedulerTaskLauncherException(e);
 		}
+	}
+
+	private boolean waitForLaunchToComplete(long timeout, long executionId) {
+		System.out.println("WAITING FOR TASK TO COMPLETE ==> " + executionId);
+		try {
+			Thread.sleep(this.schedulerTaskLauncherProperties.getIntervalTimeBetweenChecks());
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+
+		TaskExecutionResource taskExecution =
+				this.taskOperations.taskExecutionStatus(executionId);
+		if (taskExecution != null && taskExecution.getEndTime() != null) {
+			if (taskExecution.getExitCode() == null) {
+				throw new UnexpectedJobExecutionException("Task returned a null exit code.");
+			}
+			else if (taskExecution.getExitCode() != 0) {
+				throw new UnexpectedJobExecutionException("Task returned a non zero exit code.");
+			}
+			else {
+				return true;
+			}
+		}
+		if (this.schedulerTaskLauncherProperties.getMaxWaitTime() > 0 &&
+				System.currentTimeMillis() > timeout) {
+			throw new SchedulerTaskLauncherException(String.format(
+					"Timeout occurred while processing task with Execution Id %s",
+					executionId));
+		}
+		return false;
 	}
 
 	private List<String> extractLaunchArgs(String... args) {
@@ -123,6 +162,10 @@ public class SchedulerTaskLauncher {
 					String trimmedPropName = propName.substring(taskLauncherPrefix.length());
 					props.put(trimmedPropName, this.environment.getProperty(propName));
 				});
+		System.out.println("GOING TO TRY TO GET *******   " + this.environment.getProperty("OWNING_JOB_NAME"));
+		if (environment.getProperty("OWNING_JOB_NAME") != null) {
+			props.put("deployer.spring.cloud.kubernetes.OWNING_JOB_NAME", this.environment.getProperty("OWNING_JOB_NAME"));
+		}
 		return props;
 	}
 
