@@ -164,7 +164,7 @@ public class SchedulerTaskLauncher {
 				});
 		System.out.println("GOING TO TRY TO GET *******   " + this.environment.getProperty("OWNING_JOB_NAME"));
 		if (environment.getProperty("OWNING_JOB_NAME") != null) {
-			props.put("deployer.spring.cloud.kubernetes.OWNING_JOB_NAME", this.environment.getProperty("OWNING_JOB_NAME"));
+			props.put("deployer.*.kubernetes.OWNING_JOB_NAME", this.environment.getProperty("OWNING_JOB_NAME"));
 		}
 		return props;
 	}
