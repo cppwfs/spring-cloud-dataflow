@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,9 @@ public class SchedulerTaskLauncherPropertiesTests {
 		Assert.assertEquals(PLATFORM_NAME, properties.getPlatformName());
 		Assert.assertEquals(DATAFLOW_SERVER_URI, properties.getDataflowServerUri());
 
-		Assert.assertEquals(true, properties.isOwningJobNameEnabled());
-		properties.setOwningJobNameEnabled(false);
-		Assert.assertEquals(false, properties.isOwningJobNameEnabled());
+		Assert.assertEquals(true, properties.isSchedulerTaskLauncherWaitForTaskToComplete());
+		properties.setSchedulerTaskLauncherWaitForTaskToComplete(false);
+		Assert.assertEquals(false, properties.isSchedulerTaskLauncherWaitForTaskToComplete());
 		Assert.assertEquals(0, properties.getMaxWaitTime());
 		properties.setMaxWaitTime(10001);
 		Assert.assertEquals(10001, properties.getMaxWaitTime());

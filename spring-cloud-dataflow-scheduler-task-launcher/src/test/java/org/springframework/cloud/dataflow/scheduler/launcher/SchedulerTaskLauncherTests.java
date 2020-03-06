@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,7 @@ public class SchedulerTaskLauncherTests {
 		Assert.assertNotNull(propertiesArgument.getValue());
 		Assert.assertEquals(JOB_NAME, propertiesArgument.getValue().get(SchedulerTaskLauncher.OWNING_JOB_DEPLOYER_PROPERTY));
 	}
+
 	@Test
 	public void testValidWithNoOwner() {
 		final ArgumentCaptor<Map<String, String>> propertiesArgument = ArgumentCaptor.forClass(Map.class);
@@ -124,7 +125,6 @@ public class SchedulerTaskLauncherTests {
 		verify(this.taskOperations, times(1)).launch(Mockito.any(), propertiesArgument.capture(), Mockito.any(), Mockito.any());
 		Assert.assertNull(propertiesArgument.getValue().get(SchedulerTaskLauncher.OWNING_JOB_DEPLOYER_PROPERTY));
 	}
-
 
 	@Test
 	public void testTaskNameNotProvided() {

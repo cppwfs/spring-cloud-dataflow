@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,17 +30,35 @@ public class SchedulerTaskLauncherProperties {
 	 */
 	private String platformName = "default";
 
+	/**
+	 * The task definition name that is to be launched.
+	 */
 	private String taskName;
 
+	/**
+	 * The URI of the dataflow server that the scheduler task launcher will send the task launch request.
+	 */
 	private String dataflowServerUri = "http://localhost:9393";
 
+	/**
+	 * The prefix to use for the properties that signify which properties should be sent with the task launch request.
+	 */
 	private String taskLauncherPropertyPrefix = "tasklauncher";
 
+	/**
+	 * The number of seconds to wait between checks to see if the task has completed.
+	 */
 	private long intervalTimeBetweenChecks = 10000;
 
+	/**
+	 * The maximum wait time for the SchedulerTaskLauncher to wait for a task to complete.
+	 */
 	private long maxWaitTime = 0;
 
-	private boolean owningJobNameEnabled = true;
+	/**
+	 * To check if the SchedulerTaskLauncher should wait for the task to complete.
+	 */
+	private boolean schedulerTaskLauncherWaitForTaskToComplete = true;
 
 	public String getPlatformName() {
 		return platformName;
@@ -90,12 +108,12 @@ public class SchedulerTaskLauncherProperties {
 		this.maxWaitTime = maxWaitTime;
 	}
 
-	public boolean isOwningJobNameEnabled() {
-		return owningJobNameEnabled;
+	public boolean isSchedulerTaskLauncherWaitForTaskToComplete() {
+		return schedulerTaskLauncherWaitForTaskToComplete;
 	}
 
-	public void setOwningJobNameEnabled(boolean owningJobNameEnabled) {
-		this.owningJobNameEnabled = owningJobNameEnabled;
+	public void setSchedulerTaskLauncherWaitForTaskToComplete(boolean schedulerTaskLauncherWaitForTaskToComplete) {
+		this.schedulerTaskLauncherWaitForTaskToComplete = schedulerTaskLauncherWaitForTaskToComplete;
 	}
 }
 

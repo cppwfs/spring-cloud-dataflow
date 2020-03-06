@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.batch.core.UnexpectedJobExecutionException;
 import org.springframework.cloud.dataflow.rest.client.DataFlowClientException;
 import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.cloud.dataflow.rest.resource.LauncherResource;
@@ -89,11 +88,12 @@ public class SchedulerTaskLauncher {
 					this.schedulerTaskLauncherProperties.getMaxWaitTime();
 			log.info(String.format("Launching Task %s on the %s platform.", this.taskName, this.platformName));
 			long taskExecutionId = this.taskOperations.launch(this.taskName, enrichDeploymentProperties(getDeploymentProperties()), argList, null);
-			if(isOwningJobNameSpecified()) {
+			if(this.schedulerTaskLauncherProperties.isSchedulerTaskLauncherWaitForTaskToComplete() &&
+					isOwningJobNameSpecified()) {
 				log.info(String.format("%s was detected.  Waiting for Task to complete before terminating SchedulerTaskLauncher", OWNING_JOB_NAME_KEY));
-			}
-			while( isOwningJobNameSpecified() && !waitForLaunchToComplete(timeout, taskExecutionId) ) {
-				log.debug("Launched application is still running.  Will recheck.");
+				while (!waitForLaunchToComplete(timeout, taskExecutionId)) {
+					log.debug("Launched application is still running.  Will recheck.");
+				}
 			}
 		}
 		catch (DataFlowClientException e) {
@@ -113,15 +113,7 @@ public class SchedulerTaskLauncher {
 		TaskExecutionResource taskExecution =
 				this.taskOperations.taskExecutionStatus(executionId);
 		if (taskExecution != null && taskExecution.getEndTime() != null) {
-			if (taskExecution.getExitCode() == null) {
-				throw new UnexpectedJobExecutionException("Task returned a null exit code.");
-			}
-			else if (taskExecution.getExitCode() != 0) {
-				throw new UnexpectedJobExecutionException("Task returned a non zero exit code.");
-			}
-			else {
-				return true;
-			}
+			return true;
 		}
 		if (this.schedulerTaskLauncherProperties.getMaxWaitTime() > 0 &&
 				System.currentTimeMillis() > timeout) {
