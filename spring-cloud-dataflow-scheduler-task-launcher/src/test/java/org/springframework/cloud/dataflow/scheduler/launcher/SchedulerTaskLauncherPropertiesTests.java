@@ -44,9 +44,9 @@ public class SchedulerTaskLauncherPropertiesTests {
 		Assert.assertEquals(PLATFORM_NAME, properties.getPlatformName());
 		Assert.assertEquals(DATAFLOW_SERVER_URI, properties.getDataflowServerUri());
 
-		Assert.assertEquals(true, properties.isSchedulerTaskLauncherWaitForTaskToComplete());
-		properties.setSchedulerTaskLauncherWaitForTaskToComplete(false);
 		Assert.assertEquals(false, properties.isSchedulerTaskLauncherWaitForTaskToComplete());
+		properties.setSchedulerTaskLauncherWaitForTaskToComplete(true);
+		Assert.assertEquals(true, properties.isSchedulerTaskLauncherWaitForTaskToComplete());
 		Assert.assertEquals(0, properties.getMaxWaitTime());
 		properties.setMaxWaitTime(10001);
 		Assert.assertEquals(10001, properties.getMaxWaitTime());

@@ -69,6 +69,7 @@ public class DefaultSchedulerService implements SchedulerService {
 
 	private final static String APP_PREFIX = "app.";
 	private final static String DEPLOYER_PREFIX = "deployer.";
+	private final static String LAUNCHER_PREFIX = "launcher.";
 	private final static String COMMAND_ARGUMENT_PREFIX = "cmdarg.";
 	private final static String DATA_FLOW_URI_KEY = "spring.cloud.dataflow.client.serverUri";
 	private final static String OWNING_JOB_NAME_ENABLED = "spring.cloud.deployer.kubernetes.SEND_OWNING_JOB_NAME_ENABLED";
@@ -195,7 +196,12 @@ public class DefaultSchedulerService implements SchedulerService {
 
 		appProperties = tagProperties(null, appProperties, APP_PREFIX);
 		deployerProperties = tagProperties(null, deployerProperties, DEPLOYER_PREFIX);
+
+		Map<String, String> launcherProperties = extractAndQualifyLauncherProperties(taskDeploymentProperties);
+
 		appProperties.putAll(deployerProperties);
+		appProperties.putAll(launcherProperties);
+
 		AppDefinition revisedDefinition =
 				TaskServiceUtils.mergeAndExpandAppProperties(taskDefinition, metadataResource,
 						appProperties, whitelistProperties);
@@ -413,6 +419,23 @@ public class DefaultSchedulerService implements SchedulerService {
 		return new TreeMap<>(input).entrySet().stream()
 				.filter(kv -> kv.getKey().startsWith(prefix))
 				.collect(Collectors.toMap(kv -> "spring.cloud.scheduler." + kv.getKey().substring(prefixLength), Map.Entry::getValue,
+						(fromWildcard, fromApp) -> fromApp));
+	}
+
+	/**
+	 * Retain only properties that are meant for the <em>launcher</em> of a given task(those
+	 * that start with {@code launcher.} and remove the prefix
+	 *
+	 * @param input the scheduler properties
+	 * @return scheduler properties for the task
+	 */
+	private static Map<String, String> extractAndQualifyLauncherProperties(Map<String, String> input) {
+		final String prefix = LAUNCHER_PREFIX;
+		final int prefixLength = prefix.length();
+
+		return new TreeMap<>(input).entrySet().stream()
+				.filter(kv -> kv.getKey().startsWith(prefix))
+				.collect(Collectors.toMap(kv -> "spring.cloud.scheduler.task.launcher." + kv.getKey().substring(prefixLength), Map.Entry::getValue,
 						(fromWildcard, fromApp) -> fromApp));
 	}
 

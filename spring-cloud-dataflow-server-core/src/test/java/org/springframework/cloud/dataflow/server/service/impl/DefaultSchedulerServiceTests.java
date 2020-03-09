@@ -374,7 +374,7 @@ public class DefaultSchedulerServiceTests {
 
 	@Test
 	public void testScheduleWithCommandLineArguments() throws Exception{
-		List<String> commandLineArguments = getCommandLineArguments(Arrays.asList("--myArg1", "--myArg2"));
+		List<String> commandLineArguments = getCommandLineArguments(Arrays.asList("--myArg1", "--myArg2")).getCommandlineArguments();
 
 		assertNotNull("Command line arguments should not be null", commandLineArguments);
 		assertEquals("Invalid number of command line arguments", 3, commandLineArguments.size());
@@ -385,14 +385,29 @@ public class DefaultSchedulerServiceTests {
 
 	@Test
 	public void testScheduleWithoutCommandLineArguments() throws Exception {
-		List<String> commandLineArguments = getCommandLineArguments(new ArrayList<>());
+		List<String> commandLineArguments = getCommandLineArguments(new ArrayList<>()).getCommandlineArguments();
 
 		assertNotNull("Command line arguments should not be null", commandLineArguments);
 		assertEquals("Invalid number of command line arguments", 1, commandLineArguments.size());
 		assertEquals("Missing task name", "--spring.cloud.scheduler.task.launcher.taskName=myTaskDefinition",commandLineArguments.get(0));
 	}
 
-	private List<String> getCommandLineArguments(List<String> commandLineArguments) {
+	@Test
+	public void testScheduleWitLauncherProperties() throws Exception {
+		this.testProperties.put("launcher.schedulerTaskLauncherWaitForTaskToComplete", "true");
+		ScheduleRequest scheduleRequest = getCommandLineArguments(new ArrayList<>());
+
+		assertNotNull("Command line arguments should not be null", scheduleRequest.getCommandlineArguments());
+		assertEquals("Invalid number of command line arguments", 1, scheduleRequest.getCommandlineArguments().size());
+		assertEquals("Missing task name", "--spring.cloud.scheduler.task.launcher.taskName=myTaskDefinition",scheduleRequest.getCommandlineArguments().get(0));
+		assertEquals("Expecting 2 properties",2, scheduleRequest.getDefinition().getProperties().size());
+		assertEquals("Expecting the value of true for schedulerTaskLauncherWaitForTaskToComplete","true",
+				scheduleRequest.getDefinition().getProperties().
+						get("spring.cloud.scheduler.task.launcher.schedulerTaskLauncherWaitForTaskToComplete"));
+	}
+
+
+	private ScheduleRequest getCommandLineArguments(List<String> commandLineArguments) {
 		Scheduler mockScheduler = mock(SimpleTestScheduler.class);
 		TaskDefinitionRepository mockTaskDefinitionRepository = mock(TaskDefinitionRepository.class);
 		AppRegistryService mockAppRegistryService = mock(AppRegistryService.class);
@@ -419,7 +434,7 @@ public class DefaultSchedulerServiceTests {
 		ArgumentCaptor<ScheduleRequest> scheduleRequestArgumentCaptor = ArgumentCaptor.forClass(ScheduleRequest.class);
 		verify(mockScheduler).schedule(scheduleRequestArgumentCaptor.capture());
 
-		return scheduleRequestArgumentCaptor.getValue().getCommandlineArguments();
+		return scheduleRequestArgumentCaptor.getValue();
 	}
 
 	private void verifyScheduleExistsInScheduler(ScheduleInfo scheduleInfo) {

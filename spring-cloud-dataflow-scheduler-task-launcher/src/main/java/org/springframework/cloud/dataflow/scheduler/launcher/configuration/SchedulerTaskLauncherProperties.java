@@ -58,7 +58,7 @@ public class SchedulerTaskLauncherProperties {
 	/**
 	 * To check if the SchedulerTaskLauncher should wait for the task to complete.
 	 */
-	private boolean schedulerTaskLauncherWaitForTaskToComplete = true;
+	private boolean schedulerTaskLauncherWaitForTaskToComplete = false;
 
 	public String getPlatformName() {
 		return platformName;
