@@ -72,7 +72,7 @@ public class DefaultSchedulerService implements SchedulerService {
 	private final static String LAUNCHER_PREFIX = "launcher.";
 	private final static String COMMAND_ARGUMENT_PREFIX = "cmdarg.";
 	private final static String DATA_FLOW_URI_KEY = "spring.cloud.dataflow.client.serverUri";
-	private final static String OWNING_JOB_NAME_ENABLED = "spring.cloud.deployer.kubernetes.SEND_OWNING_JOB_NAME_ENABLED";
+	private final static String OWNING_JOB_NAME_ENABLED = "spring.cloud.scheduler.SEND_OWNING_JOB_NAME_ENABLED";
 
 	private final static int MAX_SCHEDULE_NAME_LEN = 52;
 
@@ -214,7 +214,7 @@ public class DefaultSchedulerService implements SchedulerService {
 		revisedCommandLineArgs.add("--spring.cloud.scheduler.task.launcher.taskName=" + taskDefinitionName);
 		Launcher launcher = getDefaultLauncher();
 		if(launcher.getType().equals(TaskPlatformFactory.KUBERNETES_PLATFORM_TYPE)) {
-			deployerDeploymentProperties.put(OWNING_JOB_NAME_ENABLED, "true");
+			taskDeploymentProperties.put(OWNING_JOB_NAME_ENABLED, "true");
 		}
 		ScheduleRequest scheduleRequest = new ScheduleRequest(revisedDefinition, taskDeploymentProperties,
 				deployerDeploymentProperties, revisedCommandLineArgs,

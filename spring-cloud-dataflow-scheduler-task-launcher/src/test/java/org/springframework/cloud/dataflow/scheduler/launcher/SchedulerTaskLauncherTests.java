@@ -67,7 +67,7 @@ public class SchedulerTaskLauncherTests {
 		this.taskOperations = Mockito.mock(TaskOperations.class);
 		Mockito.when(this.taskOperations.listPlatforms()).thenReturn(new PagedModel(Collections.singletonList(resource), null,Collections.emptyList()));
 		TaskExecution taskExecution = new TaskExecution();
-		taskExecution.setEndTime(new Date());
+		taskExecution.setStartTime(new Date());
 		taskExecution.setExitCode(0);
 		TaskExecutionResource taskExecutionResource = new TaskExecutionResource(taskExecution);
 		Mockito.when(this.taskOperations.taskExecutionStatus(anyLong())).thenReturn(taskExecutionResource);

@@ -112,7 +112,7 @@ public class SchedulerTaskLauncher {
 
 		TaskExecutionResource taskExecution =
 				this.taskOperations.taskExecutionStatus(executionId);
-		if (taskExecution != null && taskExecution.getEndTime() != null) {
+		if (taskExecution != null && taskExecution.getStartTime() != null) {
 			return true;
 		}
 		if (this.schedulerTaskLauncherProperties.getMaxWaitTime() > 0 &&
@@ -192,7 +192,7 @@ public class SchedulerTaskLauncher {
 	}
 
 	private boolean isOwningJobNameSpecified() {
-		return (this.environment.getProperty(OWNING_JOB_NAME_KEY) != null);
+		return true;//(this.environment.getProperty(OWNING_JOB_NAME_KEY) != null);
 	}
 
 }
