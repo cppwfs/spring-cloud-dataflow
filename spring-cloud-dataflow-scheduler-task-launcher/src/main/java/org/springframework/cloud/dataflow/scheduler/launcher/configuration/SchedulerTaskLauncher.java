@@ -84,12 +84,12 @@ public class SchedulerTaskLauncher {
 		verifyTaskPlatform(this.taskOperations);
 		List<String> argList = extractLaunchArgs(args);
 		try {
-			long timeout = System.currentTimeMillis() +
-					this.schedulerTaskLauncherProperties.getMaxWaitTime();
 			log.info(String.format("Launching Task %s on the %s platform.", this.taskName, this.platformName));
 			long taskExecutionId = this.taskOperations.launch(this.taskName, enrichDeploymentProperties(getDeploymentProperties()), argList, null);
 			if(this.schedulerTaskLauncherProperties.isSchedulerTaskLauncherWaitForTaskToComplete() &&
 					isOwningJobNameSpecified()) {
+				long timeout = System.currentTimeMillis() +
+						this.schedulerTaskLauncherProperties.getMaxWaitTime();
 				log.info(String.format("%s was detected.  Waiting for Task to complete before terminating SchedulerTaskLauncher", OWNING_JOB_NAME_KEY));
 				while (!waitForLaunchToComplete(timeout, taskExecutionId)) {
 					log.debug("Launched application is still running.  Will recheck.");
