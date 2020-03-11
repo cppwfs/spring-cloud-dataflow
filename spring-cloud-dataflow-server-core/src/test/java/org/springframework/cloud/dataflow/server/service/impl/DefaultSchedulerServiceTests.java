@@ -186,7 +186,7 @@ public class DefaultSchedulerServiceTests {
 		Scheduler scheduler = getMockedSchedulerForPlatform("Kubernetes");
 		final ArgumentCaptor<ScheduleRequest> argument = ArgumentCaptor.forClass(ScheduleRequest.class);
 		verify(scheduler, times(1)).schedule(argument.capture());
-		String owningJobFlag = argument.getValue().getDeploymentProperties().get("spring.cloud.deployer.kubernetes.SEND_OWNING_JOB_NAME_ENABLED");
+		String owningJobFlag = argument.getValue().getSchedulerProperties().get("spring.cloud.scheduler.SEND_OWNING_JOB_NAME_ENABLED");
 		assertThat(owningJobFlag).isEqualTo("true");
 	}
 
@@ -195,7 +195,7 @@ public class DefaultSchedulerServiceTests {
 		Scheduler scheduler = getMockedSchedulerForPlatform("CloudFoundry");
 		final ArgumentCaptor<ScheduleRequest> argument = ArgumentCaptor.forClass(ScheduleRequest.class);
 		verify(scheduler, times(1)).schedule(argument.capture());
-		String owningJobFlag = argument.getValue().getDeploymentProperties().get("spring.cloud.deployer.kubernetes.SEND_OWNING_JOB_NAME_ENABLED");
+		String owningJobFlag = argument.getValue().getSchedulerProperties().get("spring.cloud.scheduler.SEND_OWNING_JOB_NAME_ENABLED");
 		assertThat(owningJobFlag).isNull();
 	}
 

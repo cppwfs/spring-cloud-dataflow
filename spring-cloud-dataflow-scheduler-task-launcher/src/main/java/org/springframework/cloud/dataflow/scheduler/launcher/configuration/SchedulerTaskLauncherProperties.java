@@ -17,6 +17,7 @@
 package org.springframework.cloud.dataflow.scheduler.launcher.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
 
 /**
  * Properties used to configure the task launcher.
@@ -46,14 +47,24 @@ public class SchedulerTaskLauncherProperties {
 	private String taskLauncherPropertyPrefix = "tasklauncher";
 
 	/**
-	 * The number of seconds to wait between checks to see if the task has completed.
+	 * The initial back off period when checking to see if a task launched.   Defaults to 1000 millis.
 	 */
-	private long intervalTimeBetweenChecks = 10000;
+	private long initialIntervalBetweenChecks = 1000;
 
 	/**
-	 * The maximum wait time for the SchedulerTaskLauncher to wait for a task to complete.
+	 * The maximum back off period in millis before attempting another check to see if the task launched.  Defaults to 30000 millis
 	 */
-	private long maxWaitTime = 0;
+	private long maxIntervalBetweenChecks = ExponentialRandomBackOffPolicy.DEFAULT_MAX_INTERVAL;
+
+	/**
+	 * The default 'multiplier' value - value 2 (100% increase per backoff).
+	 */
+	private double intervalMultiplier = ExponentialRandomBackOffPolicy.DEFAULT_MULTIPLIER;
+
+	/**
+	 * The maximum number of times retry before task launcher fails the task launch check.
+	 */
+	private int maxRetryCount = 10;
 
 	/**
 	 * To check if the SchedulerTaskLauncher should wait for the task to complete.
@@ -92,28 +103,44 @@ public class SchedulerTaskLauncherProperties {
 		this.taskLauncherPropertyPrefix = taskLauncherPropertyPrefix;
 	}
 
-	public long getIntervalTimeBetweenChecks() {
-		return intervalTimeBetweenChecks;
-	}
-
-	public void setIntervalTimeBetweenChecks(long intervalTimeBetweenChecks) {
-		this.intervalTimeBetweenChecks = intervalTimeBetweenChecks;
-	}
-
-	public long getMaxWaitTime() {
-		return maxWaitTime;
-	}
-
-	public void setMaxWaitTime(long maxWaitTime) {
-		this.maxWaitTime = maxWaitTime;
-	}
-
 	public boolean isSchedulerTaskLauncherWaitForTaskToComplete() {
 		return schedulerTaskLauncherWaitForTaskToComplete;
 	}
 
 	public void setSchedulerTaskLauncherWaitForTaskToComplete(boolean schedulerTaskLauncherWaitForTaskToComplete) {
 		this.schedulerTaskLauncherWaitForTaskToComplete = schedulerTaskLauncherWaitForTaskToComplete;
+	}
+
+	public long getInitialIntervalBetweenChecks() {
+		return initialIntervalBetweenChecks;
+	}
+
+	public void setInitialIntervalBetweenChecks(long initialIntervalBetweenChecks) {
+		this.initialIntervalBetweenChecks = initialIntervalBetweenChecks;
+	}
+
+	public long getMaxIntervalBetweenChecks() {
+		return maxIntervalBetweenChecks;
+	}
+
+	public void setMaxIntervalBetweenChecks(long maxIntervalBetweenChecks) {
+		this.maxIntervalBetweenChecks = maxIntervalBetweenChecks;
+	}
+
+	public double getIntervalMultiplier() {
+		return intervalMultiplier;
+	}
+
+	public void setIntervalMultiplier(double intervalMultiplier) {
+		this.intervalMultiplier = intervalMultiplier;
+	}
+
+	public int getMaxRetryCount() {
+		return maxRetryCount;
+	}
+
+	public void setMaxRetryCount(int maxRetryCount) {
+		this.maxRetryCount = maxRetryCount;
 	}
 }
 

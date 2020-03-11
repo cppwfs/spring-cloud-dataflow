@@ -35,6 +35,7 @@ import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -64,20 +65,24 @@ public class SchedulerTaskLauncher {
 
 	private Environment environment;
 
+	private RetryTemplate retryTemplate;
+
 	public SchedulerTaskLauncher(TaskOperations taskOperations,
 			SchedulerTaskLauncherProperties schedulerTaskLauncherProperties,
-			Environment environment) {
+			Environment environment, RetryTemplate retryTemplate) {
 		Assert.notNull(taskOperations, "`taskOperations` must not be null");
 		Assert.notNull(schedulerTaskLauncherProperties, "`schedulerTaskLauncherProperties` must not be null");
 		Assert.notNull(environment, "`environment` must not be null");
 		Assert.hasText(schedulerTaskLauncherProperties.getTaskName(), "`taskName` must not be empty or null");
 		Assert.hasText(schedulerTaskLauncherProperties.getPlatformName(), "`platformName` must not be empty or null");
+		Assert.notNull(retryTemplate, "retryTemplate must not be null");
 
 		this.taskOperations = taskOperations;
 		this.taskName = schedulerTaskLauncherProperties.getTaskName();
 		this.platformName = schedulerTaskLauncherProperties.getPlatformName();
 		this.schedulerTaskLauncherProperties = schedulerTaskLauncherProperties;
 		this.environment = environment;
+		this.retryTemplate = retryTemplate;
 	}
 
 	public void launchTask(String... args) {
@@ -88,40 +93,31 @@ public class SchedulerTaskLauncher {
 			long taskExecutionId = this.taskOperations.launch(this.taskName, enrichDeploymentProperties(getDeploymentProperties()), argList, null);
 			if(this.schedulerTaskLauncherProperties.isSchedulerTaskLauncherWaitForTaskToComplete() &&
 					isOwningJobNameSpecified()) {
-				long timeout = System.currentTimeMillis() +
-						this.schedulerTaskLauncherProperties.getMaxWaitTime();
 				log.info(String.format("%s was detected.  Waiting for Task to complete before terminating SchedulerTaskLauncher", OWNING_JOB_NAME_KEY));
-				while (!waitForLaunchToComplete(timeout, taskExecutionId)) {
-					log.debug("Launched application is still running.  Will recheck.");
-				}
+				retryTemplate.execute(arg0 -> {
+					waitForLaunchToComplete(taskExecutionId);
+					return null;
+				});
 			}
 		}
 		catch (DataFlowClientException e) {
 			throw new SchedulerTaskLauncherException(e);
 		}
+		catch (Exception se) {
+			log.error(se);
+		}
 	}
 
-	private boolean waitForLaunchToComplete(long timeout, long executionId) {
-		try {
-			Thread.sleep(this.schedulerTaskLauncherProperties.getIntervalTimeBetweenChecks());
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new IllegalStateException(e.getMessage(), e);
-		}
+	private boolean waitForLaunchToComplete(long executionId) {
+		log.info("Checking status of task execution id: " + executionId);
 
 		TaskExecutionResource taskExecution =
 				this.taskOperations.taskExecutionStatus(executionId);
 		if (taskExecution != null && taskExecution.getStartTime() != null) {
 			return true;
 		}
-		if (this.schedulerTaskLauncherProperties.getMaxWaitTime() > 0 &&
-				System.currentTimeMillis() > timeout) {
-			throw new SchedulerTaskLauncherException(String.format(
-					"Timeout occurred while processing task with Execution Id %s",
-					executionId));
-		}
-		return false;
+		throw new SchedulerTaskLauncherException(String.format(
+				"Task with execution id %s has not launched.", executionId));
 	}
 
 	private List<String> extractLaunchArgs(String... args) {
@@ -192,7 +188,7 @@ public class SchedulerTaskLauncher {
 	}
 
 	private boolean isOwningJobNameSpecified() {
-		return true;//(this.environment.getProperty(OWNING_JOB_NAME_KEY) != null);
+		return (this.environment.getProperty(OWNING_JOB_NAME_KEY) != null);
 	}
 
 }

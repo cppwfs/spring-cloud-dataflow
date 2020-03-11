@@ -26,6 +26,9 @@ import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 
 /**
  * Configure the SchedulerTaskLauncher application.
@@ -39,9 +42,9 @@ public class LauncherConfiguration {
 	@Bean
 	public SchedulerTaskLauncher launchRequestConsumer(
 			SchedulerTaskLauncherProperties schedulerTaskLauncherProperties,
-			TaskOperations taskOperations, Environment environment) {
+			TaskOperations taskOperations, Environment environment, RetryTemplate retryTemplate) {
 		return new SchedulerTaskLauncher(taskOperations, schedulerTaskLauncherProperties,
-				environment);
+				environment, retryTemplate);
 	}
 
 	@Bean
@@ -64,6 +67,23 @@ public class LauncherConfiguration {
 		return args -> {
 			schedulerTaskLauncher.launchTask(args);
 		};
+	}
+
+	@Bean
+	public RetryTemplate retryTemplate(SchedulerTaskLauncherProperties properties) {
+		RetryTemplate retryTemplate = new RetryTemplate();
+
+		ExponentialRandomBackOffPolicy exponentialRandomBackOffPolicy = new ExponentialRandomBackOffPolicy();
+		exponentialRandomBackOffPolicy.setInitialInterval(properties.getInitialIntervalBetweenChecks());
+		exponentialRandomBackOffPolicy.setMaxInterval(properties.getMaxIntervalBetweenChecks());
+		exponentialRandomBackOffPolicy.setMultiplier(properties.getIntervalMultiplier());
+		retryTemplate.setBackOffPolicy(exponentialRandomBackOffPolicy);
+
+		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+		retryPolicy.setMaxAttempts(properties.getMaxRetryCount());
+		retryTemplate.setRetryPolicy(retryPolicy);
+
+		return retryTemplate;
 	}
 
 }

@@ -47,14 +47,18 @@ public class SchedulerTaskLauncherPropertiesTests {
 		Assert.assertEquals(true, properties.isSchedulerTaskLauncherWaitForTaskToComplete());
 		properties.setSchedulerTaskLauncherWaitForTaskToComplete(false);
 		Assert.assertEquals(false, properties.isSchedulerTaskLauncherWaitForTaskToComplete());
-		Assert.assertEquals(0, properties.getMaxWaitTime());
-		properties.setMaxWaitTime(10001);
-		Assert.assertEquals(10001, properties.getMaxWaitTime());
-		Assert.assertEquals(10000, properties.getIntervalTimeBetweenChecks());
-		properties.setIntervalTimeBetweenChecks(1);
-		Assert.assertEquals(1, properties.getIntervalTimeBetweenChecks());
-
-
+		Assert.assertEquals(10, properties.getMaxRetryCount());
+		properties.setMaxRetryCount(5);
+		Assert.assertEquals(5, properties.getMaxRetryCount());
+		Assert.assertEquals(1000, properties.getInitialIntervalBetweenChecks());
+		properties.setInitialIntervalBetweenChecks(1005);
+		Assert.assertEquals(1005, properties.getInitialIntervalBetweenChecks());
+		Assert.assertEquals(30000, properties.getMaxIntervalBetweenChecks());
+		properties.setMaxIntervalBetweenChecks(10050);
+		Assert.assertEquals(10050, properties.getMaxIntervalBetweenChecks());
+		Assert.assertEquals(2D, properties.getIntervalMultiplier(),0);
+		properties.setIntervalMultiplier(3D);
+		Assert.assertEquals(3D, properties.getIntervalMultiplier(),0);
 	}
 
 }

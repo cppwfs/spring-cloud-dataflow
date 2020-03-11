@@ -46,6 +46,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.mediatype.vnderrors.VndErrors;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.retry.support.RetryTemplate;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -134,7 +135,7 @@ public class SchedulerTaskLauncherTests {
 		thrown.expectMessage("`taskName` must not be empty or null");
 
 		new SchedulerTaskLauncher(taskOperations,
-				schedulerTaskLauncherProperties, new MockEnvironment());
+				schedulerTaskLauncherProperties, new MockEnvironment(), Mockito.mock(RetryTemplate.class));
 	}
 
 	@Test
@@ -147,7 +148,7 @@ public class SchedulerTaskLauncherTests {
 		thrown.expectMessage("`platformName` must not be empty or null");
 
 		new SchedulerTaskLauncher(taskOperations,
-				schedulerTaskLauncherProperties, new MockEnvironment());
+				schedulerTaskLauncherProperties, new MockEnvironment(), Mockito.mock(RetryTemplate.class));
 	}
 
 	@Test
@@ -187,7 +188,7 @@ public class SchedulerTaskLauncherTests {
 			Environment environment) {
 		schedulerTaskLauncherProperties.setTaskName(TASK_NAME);
 		return new SchedulerTaskLauncher(this.taskOperations,
-				schedulerTaskLauncherProperties, environment);
+				schedulerTaskLauncherProperties, environment, Mockito.mock(RetryTemplate.class));
 	}
 
 }
