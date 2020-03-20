@@ -558,11 +558,11 @@ public class TestDependencies extends WebMvcConfigurationSupport {
 											 TaskPlatform taskPlatform, TaskDefinitionRepository taskDefinitionRepository,
 											 AppRegistryService registry, ResourceLoader resourceLoader,
 											 ApplicationConfigurationMetadataResolver metaDataResolver, AuditRecordService auditRecordService,
-											 TaskConfigurationProperties taskConfigurationProperties) {
+											 TaskConfigurationProperties taskConfigurationProperties, DataSourceProperties dataSourceProperties) {
 		return new DefaultSchedulerService(commonApplicationProperties,
 				taskPlatform, taskDefinitionRepository,
 				registry, resourceLoader,
-				taskConfigurationProperties, null,
+				taskConfigurationProperties, dataSourceProperties, null,
 				metaDataResolver, new SchedulerServiceProperties(), auditRecordService);
 	}
 
