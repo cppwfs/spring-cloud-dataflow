@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.sql.DataSource;
+
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,10 +39,10 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.EmbeddedDataSourceConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.dataflow.rest.client.DataFlowClientException;
-import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.cloud.dataflow.composedtaskrunner.properties.ComposedTaskProperties;
 import org.springframework.cloud.dataflow.composedtaskrunner.support.TaskExecutionTimeoutException;
+import org.springframework.cloud.dataflow.rest.client.DataFlowClientException;
+import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.cloud.task.configuration.TaskProperties;
 import org.springframework.cloud.task.repository.TaskExecution;
 import org.springframework.cloud.task.repository.TaskExplorer;
@@ -148,7 +149,7 @@ public class TaskLauncherTaskletTests {
 				.get("task-arguments"));
 
 		TaskProperties taskProperties = new TaskProperties();
-		taskProperties.setExecutionid(88l);
+		taskProperties.setExecutionid(88L);
 		mockReturnValForTaskExecution(2L);
 		chunkContext = chunkContext();
 		createCompleteTaskExecution(0);
@@ -291,10 +292,9 @@ public class TaskLauncherTaskletTests {
 	@EnableConfigurationProperties(ComposedTaskProperties.class)
 	public static class TestConfiguration {
 
-
 		@Bean
 		TaskRepositoryInitializer taskRepositoryInitializer() {
-			return new TaskRepositoryInitializer();
+			return new TaskRepositoryInitializer(new TaskProperties());
 		}
 
 		@Bean
