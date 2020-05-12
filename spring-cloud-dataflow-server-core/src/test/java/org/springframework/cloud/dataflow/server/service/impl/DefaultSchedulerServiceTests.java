@@ -19,6 +19,7 @@ package org.springframework.cloud.dataflow.server.service.impl;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +163,7 @@ public class DefaultSchedulerServiceTests {
 
 	@Test
 	public void testSchedule(){
-		schedulerService.schedule(BASE_SCHEDULE_NAME, BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+		schedulerService.schedule(BASE_SCHEDULE_NAME, BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME));
 	}
 
@@ -170,14 +171,14 @@ public class DefaultSchedulerServiceTests {
 	public void testScheduleWithLongNameOnKuberenetesPlatform() {
 		getMockedKubernetesSchedulerService().schedule(BASE_SCHEDULE_NAME +
 				"1234567789012345612345678901234567890123", BASE_DEFINITION_NAME, this.testProperties,
-				this.commandLineArgs);
+				this.commandLineArgs, null);
 	}
 
 	@Test
 	public void testScheduleWithCapitalizeNameOnKuberenetesPlatform() {
 		SchedulerService testSchedulerService = getMockedKubernetesSchedulerService();
-		testSchedulerService.schedule(BASE_SCHEDULE_NAME + "AB", BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
-		List<ScheduleInfo> scheduleInfos = testSchedulerService.list();
+		testSchedulerService.schedule(BASE_SCHEDULE_NAME + "AB", BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
+		List<ScheduleInfo> scheduleInfos = testSchedulerService.list(null);
 		assertThat(scheduleInfos.size()).isEqualTo(1);
 		assertThat(scheduleInfos.get(0).getScheduleName()).isEqualTo("mytaskscheduleab");
 	}
@@ -186,7 +187,7 @@ public class DefaultSchedulerServiceTests {
 		Launcher launcher = new Launcher("default", "Kubernetes", Mockito.mock(TaskLauncher.class), scheduler);
 		List<Launcher> launchers = new ArrayList<>();
 		launchers.add(launcher);
-		TaskPlatform taskPlatform = new TaskPlatform("testTaskPlatform", launchers);
+		List<TaskPlatform> taskPlatform = Collections.singletonList(new TaskPlatform("testTaskPlatform", launchers));
 
 		return  new DefaultSchedulerService(this.commonApplicationProperties,
 				taskPlatform, this.taskDefinitionRepository,
@@ -197,32 +198,32 @@ public class DefaultSchedulerServiceTests {
 
 	public void testScheduleWithLongName(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME + "12345677890123456",
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME));
 	}
 
 	@Test
 	public void testScheduleCTR(){
-		schedulerService.schedule(BASE_SCHEDULE_NAME, CTR_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+		schedulerService.schedule(BASE_SCHEDULE_NAME, CTR_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME, CTR_DEFINITION_NAME));
 	}
 
 	@Test(expected = CreateScheduleException.class)
 	public void testDuplicate(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1, BASE_DEFINITION_NAME,
-				this.testProperties, this.commandLineArgs);
+				this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1, BASE_DEFINITION_NAME,
-				this.testProperties, this.commandLineArgs);
+				this.testProperties, this.commandLineArgs, null);
 	}
 
 	@Test
 	public void testMultipleSchedules(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 2,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1));
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 2));
@@ -232,13 +233,13 @@ public class DefaultSchedulerServiceTests {
 	@Test
 	public void testRemoveSchedulesForTaskDefinitionName() {
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 2,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 4,
-				CTR_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				CTR_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		validateSchedulesCount(4);
 		schedulerService.unscheduleForTaskDefinition(BASE_DEFINITION_NAME);
 		validateSchedulesCount(1);
@@ -249,17 +250,17 @@ public class DefaultSchedulerServiceTests {
 	@Test
 	public void testUnschedule(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 2,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1));
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 2));
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3));
 
-		schedulerService.unschedule(BASE_SCHEDULE_NAME + 2);
+		schedulerService.unschedule(BASE_SCHEDULE_NAME + 2, null);
 		validateSchedulesCount(2);
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1));
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3));
@@ -268,20 +269,20 @@ public class DefaultSchedulerServiceTests {
 	@Test
 	public void testEmptyUnschedule(){
 		validateSchedulesCount(0);
-		schedulerService.unschedule(BASE_SCHEDULE_NAME + 2);
+		schedulerService.unschedule(BASE_SCHEDULE_NAME + 2, null);
 		validateSchedulesCount(0);
 	}
 
 	@Test
 	public void testList(){
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 2,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 
-		List<ScheduleInfo> schedules = schedulerService.list();
+		List<ScheduleInfo> schedules = schedulerService.list(null);
 		assertThat(schedules.size()).isEqualTo(3);
 		verifyScheduleExistsInScheduler(schedules.get(0));
 		verifyScheduleExistsInScheduler(schedules.get(1));
@@ -294,15 +295,15 @@ public class DefaultSchedulerServiceTests {
 		schedulerServiceProperties.setMaxSchedulesReturned(MAX_COUNT);
 		for (int i = 0; i < MAX_COUNT + 1; i++) {
 			schedulerService.schedule(BASE_SCHEDULE_NAME + i,
-					BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+					BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		}
-		List<ScheduleInfo> schedules = schedulerService.list();
+		List<ScheduleInfo> schedules = schedulerService.list(null);
 		assertThat(schedules.size()).isEqualTo(MAX_COUNT);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void testListPaginated() {
-		schedulerService.list(PageRequest.of(0, 1));
+		schedulerService.list(PageRequest.of(0, 1), null);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -314,13 +315,13 @@ public class DefaultSchedulerServiceTests {
 	public void testListWithParams() {
 		taskDefinitionRepository.save(new TaskDefinition(BASE_DEFINITION_NAME + 1, "demo"));
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 2,
-				BASE_DEFINITION_NAME + 1, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME + 1, this.testProperties, this.commandLineArgs, null);
 		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
-				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs);
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, null);
 
-		List<ScheduleInfo> schedules = schedulerService.list(BASE_DEFINITION_NAME + 1);
+		List<ScheduleInfo> schedules = schedulerService.list(BASE_DEFINITION_NAME + 1, null);
 		assertThat(schedules.size()).isEqualTo(1);
 		verifyScheduleExistsInScheduler(schedules.get(0));
 	}
@@ -328,9 +329,9 @@ public class DefaultSchedulerServiceTests {
 	@Test
 	public void testEmptyList() {
 		taskDefinitionRepository.save(new TaskDefinition(BASE_DEFINITION_NAME + 1, "demo"));
-		List<ScheduleInfo> schedules = schedulerService.list(BASE_DEFINITION_NAME + 1);
+		List<ScheduleInfo> schedules = schedulerService.list(BASE_DEFINITION_NAME + 1, "testTaskPlatform");
 		assertThat(schedules.size()).isEqualTo(0);
-		schedules = schedulerService.list();
+		schedules = schedulerService.list(null);
 		assertThat(schedules.size()).isEqualTo(0);
 	}
 
@@ -360,7 +361,7 @@ public class DefaultSchedulerServiceTests {
 		Launcher launcher = new Launcher("default", "defaultType", null, mockScheduler);
 		List<Launcher> launchers = new ArrayList<>();
 		launchers.add(launcher);
-		TaskPlatform taskPlatform = new TaskPlatform("testTaskPlatform", launchers);
+		List<TaskPlatform> taskPlatform = Collections.singletonList(new TaskPlatform("testTaskPlatform", launchers));
 		SchedulerService mockSchedulerService = new DefaultSchedulerService(mock(CommonApplicationProperties.class),
 				taskPlatform, mockTaskDefinitionRepository, mockAppRegistryService, mock(ResourceLoader.class),
 				this.taskConfigurationProperties, mock(DataSourceProperties.class), "uri",
@@ -374,7 +375,7 @@ public class DefaultSchedulerServiceTests {
 		when(mockAppRegistryService.find(taskDefinition.getRegisteredAppName(), ApplicationType.task))
 				.thenReturn(new AppRegistration());
 		mockSchedulerService.schedule(BASE_SCHEDULE_NAME, BASE_DEFINITION_NAME, this.testProperties,
-				commandLineArguments);
+				commandLineArguments, null);
 
 		ArgumentCaptor<ScheduleRequest> scheduleRequestArgumentCaptor = ArgumentCaptor.forClass(ScheduleRequest.class);
 		verify(mockScheduler).schedule(scheduleRequestArgumentCaptor.capture());
@@ -383,7 +384,7 @@ public class DefaultSchedulerServiceTests {
 	}
 
 	private void verifyScheduleExistsInScheduler(ScheduleInfo scheduleInfo) {
-		List<ScheduleInfo> scheduleInfos = schedulerService.list();
+		List<ScheduleInfo> scheduleInfos = schedulerService.list(null);
 		scheduleInfos = scheduleInfos.stream().filter(s -> s.getScheduleName().
 				equals(scheduleInfo.getScheduleName())).
 				collect(Collectors.toList());

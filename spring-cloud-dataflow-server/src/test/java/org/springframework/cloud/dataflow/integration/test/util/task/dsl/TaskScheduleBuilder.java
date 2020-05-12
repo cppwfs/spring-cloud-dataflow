@@ -25,6 +25,7 @@ public class TaskScheduleBuilder {
 	private final SchedulerOperations schedulerOperations;
 	private String name;
 	private Task task;
+	private String[] platforms;
 
 	public TaskScheduleBuilder(SchedulerOperations schedulerOperations) {
 		this.schedulerOperations = schedulerOperations;
@@ -41,6 +42,6 @@ public class TaskScheduleBuilder {
 	}
 
 	public TaskSchedule create() {
-		return new TaskSchedule(this.name, this.task, this.schedulerOperations);
+		return new TaskSchedule(this.name, this.task, this.schedulerOperations, this.platforms);
 	}
 }

@@ -17,7 +17,7 @@ package org.springframework.cloud.dataflow.server.controller;
 
 import org.springframework.cloud.dataflow.core.Launcher;
 import org.springframework.cloud.dataflow.rest.resource.LauncherResource;
-import org.springframework.cloud.dataflow.server.job.LauncherRepository;
+import org.springframework.cloud.dataflow.server.service.LauncherService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -39,12 +39,12 @@ import org.springframework.web.bind.annotation.RestController;
 @ExposesResourceFor(LauncherResource.class)
 public class TaskPlatformController {
 
-	private final LauncherRepository launcherRepository;
+	private final LauncherService launcherService;
 
 	private final Assembler launcherAssembler = new Assembler();
 
-	public TaskPlatformController(LauncherRepository LauncherRepository) {
-		this.launcherRepository = LauncherRepository;
+	public TaskPlatformController(LauncherService launcherService) {
+		this.launcherService = launcherService;
 	}
 
 	/**
@@ -57,7 +57,20 @@ public class TaskPlatformController {
 	@ResponseStatus(HttpStatus.OK)
 	public PagedModel<LauncherResource> list(Pageable pageable,
 			PagedResourcesAssembler<Launcher> assembler) {
-		return assembler.toModel(this.launcherRepository.findAll(pageable), this.launcherAssembler);
+		return assembler.toModel(this.launcherService.getAllLaunchers(pageable), this.launcherAssembler);
+	}
+
+	/**
+	 * Returns the list of platform accounts that have a scheduler enabled.
+	 * @param pageable the Pageable request
+	 * @param assembler the paged resource assembler for Launcher
+	 * @return the paged resources of type {@link LauncherResource}
+	 */
+	@RequestMapping(value = "/scheduler", method = RequestMethod.GET)
+	@ResponseStatus(HttpStatus.OK)
+	public PagedModel<LauncherResource> listLaunchersWithScheduler(Pageable pageable,
+			PagedResourcesAssembler<Launcher> assembler) {
+		return assembler.toModel(this.launcherService.getLaunchersWithSchedules(pageable), this.launcherAssembler);
 	}
 
 	/**

@@ -15,25 +15,18 @@
  */
 package org.springframework.cloud.dataflow.server.config.cloudfoundry;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnCloudPlatform;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.cloud.CloudPlatform;
-import org.springframework.cloud.dataflow.server.config.features.SchedulerConfiguration;
 import org.springframework.cloud.deployer.spi.scheduler.cloudfoundry.CloudFoundrySchedulerProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Mark Pollack
  */
-@ConditionalOnCloudPlatform(CloudPlatform.CLOUD_FOUNDRY)
-@Configuration
-@Conditional({ SchedulerConfiguration.SchedulerConfigurationPropertyChecker.class })
+//@ConditionalOnCloudPlatform(CloudPlatform.CLOUD_FOUNDRY)
+//@Configuration
+//@Conditional({ SchedulerConfiguration.SchedulerConfigurationPropertyChecker.class })
 public class CloudFoundrySchedulerConfiguration {
 
-	@Bean
-	@ConditionalOnMissingBean
+//	@Bean
+//	@ConditionalOnMissingBean
 	public CloudFoundrySchedulerProperties cloudFoundrySchedulerProperties() {
 		return new CloudFoundrySchedulerProperties();
 	}

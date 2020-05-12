@@ -17,6 +17,7 @@
 package org.springframework.cloud.dataflow.server.configuration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -316,7 +317,7 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 			TaskConfigurationProperties taskConfigurationProperties,
 			DataSourceProperties dataSourceProperties) {
 		return new DefaultSchedulerService(commonApplicationProperties,
-				taskPlatform, taskDefinitionRepository,
+				Collections.singletonList(taskPlatform), taskDefinitionRepository,
 				registry, resourceLoader,
 				taskConfigurationProperties, dataSourceProperties, null,
 				metaDataResolver, schedulerServiceProperties, auditRecordService);
@@ -324,7 +325,7 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 
 	@Bean
 	public TaskPlatform taskPlatform(Scheduler scheduler) {
-		Launcher launcher = new Launcher("default", "defaultType", Mockito.mock(TaskLauncher.class), scheduler);
+		Launcher launcher = new Launcher("testTaskPlatform", "defaultType", Mockito.mock(TaskLauncher.class), scheduler);
 		List<Launcher> launchers = new ArrayList<>();
 		launchers.add(launcher);
 		TaskPlatform taskPlatform = new TaskPlatform("testTaskPlatform", launchers);

@@ -239,11 +239,13 @@ public abstract class BaseDocumentation {
 	public SchedulerService schedulerService() {
 		return new SchedulerService() {
 			@Override
-			public void schedule(String scheduleName, String taskDefinitionName, Map<String, String> taskProperties, List<String> commandLineArgs) {
+			public void schedule(String scheduleName, String taskDefinitionName,
+					Map<String, String> taskProperties, List<String> commandLineArgs,
+					String platformName) {
 			}
 
 			@Override
-			public void unschedule(String scheduleName) {
+			public void unschedule(String scheduleName, String platformName) {
 			}
 
 			@Override
@@ -251,27 +253,28 @@ public abstract class BaseDocumentation {
 			}
 
 			@Override
-			public List<ScheduleInfo> list(Pageable pageable, String taskDefinitionName) {
+			public List<ScheduleInfo> list(Pageable pageable, String taskDefinitionName,
+					String platformName) {
 				return null;
 			}
 
 			@Override
-			public Page<ScheduleInfo> list(Pageable pageable) {
+			public Page<ScheduleInfo> list(Pageable pageable, String platformName) {
 				return null;
 			}
 
 			@Override
-			public List<ScheduleInfo> list(String taskDefinitionName) {
+			public List<ScheduleInfo> list(String taskDefinitionName, String platformName) {
 				return getSampleList();
 			}
 
 			@Override
-			public List<ScheduleInfo> list() {
+			public List<ScheduleInfo> list(String platformName) {
 				return getSampleList();
 			}
 
 			@Override
-			public ScheduleInfo getSchedule(String scheduleName) {
+			public ScheduleInfo getSchedule(String scheduleName, String platformName) {
 				return null;
 			}
 		};

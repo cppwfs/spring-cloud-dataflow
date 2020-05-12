@@ -61,34 +61,51 @@ public class SchedulerTemplate implements SchedulerOperations {
 	}
 
 	@Override
-	public void schedule(String scheduleName, String taskDefinitionName, Map<String, String> taskProperties, List<String> commandLineArgs) {
+	public void schedule(String scheduleName, String taskDefinitionName, Map<String, String> taskProperties, List<String> commandLineArgs, String platform) {
 		MultiValueMap<String, Object> values = new LinkedMultiValueMap<>();
 		values.add("scheduleName", scheduleName);
 		values.add("properties", DeploymentPropertiesUtils.format(taskProperties));
 		values.add("taskDefinitionName", taskDefinitionName);
 		values.add("arguments", commandLineArgs);
+		if(platform != null) {
+			values.add("platform", platform);
+		}
 		restTemplate.postForObject(schedulesLink.getHref(), values, Long.class);
 	}
 
 	@Override
-	public void unschedule(String scheduleName) {
-		restTemplate.delete(schedulesLink.getHref() + "/" + scheduleName);
+	public void unschedule(String scheduleName, String platform) {
+		String url = schedulesLink.getHref() + "/" + scheduleName;
+		if(platform != null) {
+			url = url + "?platform=" + platform;
+		}
+		restTemplate.delete(url);
 	}
 
 	@Override
-	public PagedModel<ScheduleInfoResource> list(String taskDefinitionName) {
-		return restTemplate.getForObject(schedulesInstanceLink.expand(taskDefinitionName).getHref(),
-				ScheduleInfoResource.Page.class);
+	public PagedModel<ScheduleInfoResource> list(String taskDefinitionName, String platform) {
+		String url = schedulesInstanceLink.expand(taskDefinitionName).getHref();
+		if(platform != null) {
+			url = url + "?platform=" + platform;
+		}
+		return restTemplate.getForObject(url , ScheduleInfoResource.Page.class);
 	}
 
 	@Override
-	public PagedModel<ScheduleInfoResource> list() {
-		return restTemplate.getForObject(schedulesLink.getHref(), ScheduleInfoResource.Page.class);
+	public PagedModel<ScheduleInfoResource> list(String platform) {
+		String url = schedulesLink.getHref();
+		if(platform != null) {
+			url = url + "?platform=" + platform;
+		}
+		return restTemplate.getForObject(url, ScheduleInfoResource.Page.class);
 	}
 
 	@Override
-	public ScheduleInfoResource getSchedule(String scheduleName) {
-		return restTemplate.getForObject(schedulesLink.getHref() + "/" + scheduleName,
-				ScheduleInfoResource.class);
+	public ScheduleInfoResource getSchedule(String scheduleName, String platform) {
+		String url = schedulesLink.getHref() + "/" + scheduleName;
+		if(platform != null) {
+			url = url + "?platform=" + platform;
+		}
+		return restTemplate.getForObject(url, ScheduleInfoResource.class);
 	}
 }

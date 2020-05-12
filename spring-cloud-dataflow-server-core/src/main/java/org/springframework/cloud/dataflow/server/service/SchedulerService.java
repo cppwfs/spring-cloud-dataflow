@@ -47,16 +47,18 @@ public interface SchedulerService {
 	 * {@link org.springframework.cloud.dataflow.core.TaskDefinition} to be scheduled.
 	 * @param taskProperties  properties required for scheduling or launching a task.
 	 * @param commandLineArgs the command line args to be used when launching the task.
+	 * @param platformName the name of the platform where the schedule should be created.
 	 */
 	void schedule(String scheduleName, String taskDefinitionName,
-			Map<String, String> taskProperties, List<String> commandLineArgs);
+			Map<String, String> taskProperties, List<String> commandLineArgs, String platformName);
 
 	/**
 	 *  Unschedule a schedule that has been created.
 	 *
 	 * @param scheduleName the name of the schedule to be removed.
+	 * @param platformName the name of the platform from where the schedule will be destroyed.
 	 */
-	void unschedule(String scheduleName);
+	void unschedule(String scheduleName, String platformName);
 
 	/**
 	 *  Unschedule all schedules that have been created for this task definition name.
@@ -70,9 +72,10 @@ public interface SchedulerService {
 	 *
 	 * @param pageable Establish the pagination setup for the result set.
 	 * @param taskDefinitionName to retrieve Schedules for a specified taskDefinitionName.
+	 * @param platformName name of platform from which the schedules will be retrieved.
 	 * @return A List of Schedules configured for the provided taskDefinitionName.
 	 */
-	List<ScheduleInfo> list(Pageable pageable, String taskDefinitionName) ;
+	List<ScheduleInfo> list(Pageable pageable, String taskDefinitionName, String platformName) ;
 
 	/**
 	 * List all of the schedules registered with the system.
@@ -80,30 +83,32 @@ public interface SchedulerService {
 	 * @param pageable Establish the pagination setup for the result set.
 	 * @return Paged items of schedules.
 	 */
-	Page<ScheduleInfo> list(Pageable pageable);
+	Page<ScheduleInfo> list(Pageable pageable, String platformName);
 
 	/**
 	 * List all of the Schedules associated with the provided TaskDefinition up to the
 	 * established maximum as specified {@link SchedulerServiceProperties#maxSchedulesReturned}.
 	 *
 	 * @param taskDefinitionName to retrieve Schedules for a specified taskDefinitionName.
+	 * @param platformName the name of the platform where schedules will be retrieved.
 	 * @return A List of Schedules configured for the provided taskDefinitionName.
 	 */
-	List<ScheduleInfo> list(String taskDefinitionName) ;
+	List<ScheduleInfo> list(String taskDefinitionName, String platformName) ;
 
 	/**
 	 * List all of the schedules registered with the system up to the
 	 * established maximum as specified {@link SchedulerServiceProperties#maxSchedulesReturned}.
-	 *
+	 * @param platformName the name for the platform where schedules will be retrieved.
 	 * @return A List of Schedules for the given system.
 	 */
-	List<ScheduleInfo> list();
+	List<ScheduleInfo> list(String platformName);
 
 	/**
 	 * Retrieves the {@link ScheduleInfo} for the specified ScheduleName.
 	 *
 	 * @param scheduleName the name of schedule to retrieve.
+	 * @param platformName the name of the platform where this schedule will be obtained.
 	 * @return {@link ScheduleInfo} for the scheduleName passed in.
 	 */
-	ScheduleInfo getSchedule(String scheduleName);
+	ScheduleInfo getSchedule(String scheduleName, String platformName);
 }

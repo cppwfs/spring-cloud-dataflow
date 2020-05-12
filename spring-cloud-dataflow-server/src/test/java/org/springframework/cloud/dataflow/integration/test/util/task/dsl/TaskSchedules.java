@@ -28,6 +28,7 @@ import org.springframework.cloud.dataflow.rest.resource.ScheduleInfoResource;
 public class TaskSchedules {
 	private final SchedulerOperations schedulerOperations;
 	private Tasks tasks;
+	private String[] platforms;
 
 	public TaskSchedules(SchedulerOperations schedulerOperations, Tasks tasks) {
 		this.schedulerOperations = schedulerOperations;
@@ -38,35 +39,35 @@ public class TaskSchedules {
 		return new TaskScheduleBuilder(this.schedulerOperations);
 	}
 
-	public TaskSchedule findByScheduleName(String scheduleName) {
-		if (isScheduled(scheduleName)) {
-			ScheduleInfoResource s = this.schedulerOperations.getSchedule(scheduleName);
+	public TaskSchedule findByScheduleName(String scheduleName, String platform) {
+		if (isScheduled(scheduleName, platform)) {
+			ScheduleInfoResource s = this.schedulerOperations.getSchedule(scheduleName, platform);
 			Task task = this.tasks.get(s.getTaskDefinitionName());
 			String prefix = scheduleName.replace("-scdf-" + task.getTaskName(), "");
-			return new TaskSchedule(prefix, task, schedulerOperations);
+			return new TaskSchedule(prefix, task, schedulerOperations, this.platforms);
 		}
 		return null;
 	}
 
-	public List<TaskSchedule> list(Task task) {
-		return this.schedulerOperations.list(task.getTaskName()).getContent().stream()
+	public List<TaskSchedule> list(Task task, String platform) {
+		return this.schedulerOperations.list(task.getTaskName(), platform).getContent().stream()
 				.map(s -> {
 					String prefix = s.getScheduleName().replace("-scdf-" + task.getTaskName(), "");
-					return new TaskSchedule(prefix, task, schedulerOperations);
+					return new TaskSchedule(prefix, task, schedulerOperations, this.platforms);
 				}).collect(Collectors.toList());
 	}
 
-	public List<TaskSchedule> list() {
-		return this.schedulerOperations.list().getContent().stream()
+	public List<TaskSchedule> list(String platform) {
+		return this.schedulerOperations.list(platform).getContent().stream()
 				.map(s -> {
 					Task task = this.tasks.get(s.getTaskDefinitionName());
 					String prefix = s.getScheduleName().replace("-scdf-" + task.getTaskName(), "");
-					return new TaskSchedule(prefix, task, schedulerOperations);
+					return new TaskSchedule(prefix, task, schedulerOperations, this.platforms);
 				}).collect(Collectors.toList());
 	}
 
-	private boolean isScheduled(String scheduleName) {
-		return this.schedulerOperations.list().getContent().stream()
+	private boolean isScheduled(String scheduleName, String platform) {
+		return this.schedulerOperations.list(platform).getContent().stream()
 				.anyMatch(sr -> sr.getScheduleName().equals(scheduleName));
 	}
 }

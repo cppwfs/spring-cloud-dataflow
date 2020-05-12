@@ -30,30 +30,32 @@ public class TaskSchedule implements AutoCloseable {
 
 	private final SchedulerOperations schedulerOperations;
 	private final Task task;
+	private final String[] platforms;
 
-	public TaskSchedule(String prefix, Task task, SchedulerOperations schedulerOperations) {
+	public TaskSchedule(String prefix, Task task, SchedulerOperations schedulerOperations, String[] platforms) {
 		this.prefix = prefix;
 		this.task = task;
 		this.schedulerOperations = schedulerOperations;
+		this.platforms = platforms;
 	}
 
-	public void schedule(Map<String, String> scheduleProperties, String... taskArgs) {
-		Assert.isTrue(!isScheduled(), "Task already scheduled!");
-		this.schedulerOperations.schedule(prefix, task.getTaskName(), scheduleProperties, Arrays.asList(taskArgs));
+	public void schedule(String platform, Map<String, String> scheduleProperties, String... taskArgs) {
+		Assert.isTrue(!isScheduled(platform), "Task already scheduled!");
+		this.schedulerOperations.schedule(prefix, task.getTaskName(), scheduleProperties, Arrays.asList(taskArgs), platform);
 	}
 
-	public void unschedule() {
-		this.schedulerOperations.unschedule(getScheduleName());
+	public void unschedule(String platform) {
+		this.schedulerOperations.unschedule(getScheduleName(), platform);
 	}
 
-	public boolean isScheduled() {
-		return this.schedulerOperations.list(this.task.getTaskName()).getContent().stream()
+	public boolean isScheduled(String platform) {
+		return this.schedulerOperations.list(this.task.getTaskName(), platform).getContent().stream()
 				.anyMatch(sr -> sr.getScheduleName().equals(this.getScheduleName()));
 	}
 
-	public Map<String, String> getScheduleProperties() {
-		Assert.isTrue(isScheduled(), "Only scheduled task can have properties");
-		return this.schedulerOperations.getSchedule(getScheduleName()).getScheduleProperties();
+	public Map<String, String> getScheduleProperties(String platform) {
+		Assert.isTrue(isScheduled(platform), "Only scheduled task can have properties");
+		return this.schedulerOperations.getSchedule(getScheduleName(), platform).getScheduleProperties();
 	}
 
 	public Task getTask() {
@@ -66,8 +68,17 @@ public class TaskSchedule implements AutoCloseable {
 
 	@Override
 	public void close() {
-		if (isScheduled()) {
-			unschedule();
+		if(platforms == null) {
+			if (isScheduled(null)) {
+				unschedule(null);
+			}
+		}
+		else {
+			for(String platform : Arrays.asList(this.platforms)) {
+				if (isScheduled(platform)) {
+					unschedule(platform);
+				}
+			}
 		}
 	}
 }

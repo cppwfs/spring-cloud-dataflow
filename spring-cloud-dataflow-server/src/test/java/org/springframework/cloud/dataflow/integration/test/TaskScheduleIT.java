@@ -92,6 +92,7 @@ public class TaskScheduleIT {
 	private boolean enabledScheduler;
 	private TaskSchedules schedules;
 	private String platformInfo;
+	private String platform;
 
 	@BeforeAll
 	public static void beforeAll() {
@@ -144,16 +145,16 @@ public class TaskScheduleIT {
 			 TaskSchedule taskSchedule1 = schedules.builder().prefix(randomName("schedule1")).task(task1).create();
 			 TaskSchedule taskSchedule2 = schedules.builder().prefix(randomName("schedule2")).task(task2).create()) {
 
-			taskSchedule1.schedule(Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
-			taskSchedule2.schedule(Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
+			taskSchedule1.schedule(this.platform, Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
+			taskSchedule2.schedule(this.platform, Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
 
-			assertThat(schedules.list().size()).isEqualTo(2);
+			assertThat(schedules.list(this.platform).size()).isEqualTo(2);
 
 			HashSet<String> scheduleSet = new HashSet<>(Arrays.asList(taskSchedule1.getScheduleName(), taskSchedule2.getScheduleName()));
 
-			for (TaskSchedule taskSchedule : schedules.list()) {
+			for (TaskSchedule taskSchedule : schedules.list(this.platform)) {
 				if (scheduleSet.contains(taskSchedule.getScheduleName())) {
-					assertThat(taskSchedule.getScheduleProperties().get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
+					assertThat(taskSchedule.getScheduleProperties(this.platform).get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
 				}
 				else {
 					fail(String.format("%s schedule is missing from result set of list.", taskSchedule.getScheduleName()));
@@ -174,24 +175,24 @@ public class TaskScheduleIT {
 			 TaskSchedule taskSchedule1 = schedules.builder().prefix(randomName("schedule1")).task(task1).create();
 			 TaskSchedule taskSchedule2 = schedules.builder().prefix(randomName("schedule2")).task(task2).create()) {
 
-			assertThat(schedules.list().size()).isEqualTo(0);
-			assertThat(schedules.list(task1).size()).isEqualTo(0);
-			assertThat(schedules.list(task2).size()).isEqualTo(0);
+			assertThat(schedules.list(this.platform).size()).isEqualTo(0);
+			assertThat(schedules.list(task1, this.platform).size()).isEqualTo(0);
+			assertThat(schedules.list(task2, this.platform).size()).isEqualTo(0);
 
-			taskSchedule1.schedule(Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
-			taskSchedule2.schedule(Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
+			taskSchedule1.schedule(this.platform, Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
+			taskSchedule2.schedule(this.platform, Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
 
-			assertThat(schedules.list().size()).isEqualTo(2);
-			assertThat(schedules.list(task1).size()).isEqualTo(1);
-			assertThat(schedules.list(task2).size()).isEqualTo(1);
+			assertThat(schedules.list(this.platform).size()).isEqualTo(2);
+			assertThat(schedules.list(task1, this.platform).size()).isEqualTo(1);
+			assertThat(schedules.list(task2, this.platform).size()).isEqualTo(1);
 
-			assertThat(schedules.list(task1).get(0).getScheduleName()).isEqualTo(taskSchedule1.getScheduleName());
-			assertThat(schedules.list(task1).get(0).getScheduleProperties().containsKey(SchedulerPropertyKeys.CRON_EXPRESSION)).isTrue();
-			assertThat(schedules.list(task1).get(0).getScheduleProperties().get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
+			assertThat(schedules.list(task1, this.platform).get(0).getScheduleName()).isEqualTo(taskSchedule1.getScheduleName());
+			assertThat(schedules.list(task1, this.platform).get(0).getScheduleProperties(this.platform).containsKey(SchedulerPropertyKeys.CRON_EXPRESSION)).isTrue();
+			assertThat(schedules.list(task1, this.platform).get(0).getScheduleProperties(this.platform).get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
 
-			assertThat(schedules.list(task2).get(0).getScheduleName()).isEqualTo(taskSchedule2.getScheduleName());
-			assertThat(schedules.list(task2).get(0).getScheduleProperties().containsKey(SchedulerPropertyKeys.CRON_EXPRESSION)).isTrue();
-			assertThat(schedules.list(task2).get(0).getScheduleProperties().get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
+			assertThat(schedules.list(task2, this.platform).get(0).getScheduleName()).isEqualTo(taskSchedule2.getScheduleName());
+			assertThat(schedules.list(task2, this.platform).get(0).getScheduleProperties(this.platform).containsKey(SchedulerPropertyKeys.CRON_EXPRESSION)).isTrue();
+			assertThat(schedules.list(task2, this.platform).get(0).getScheduleProperties(this.platform).get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
 		}
 	}
 
@@ -205,22 +206,22 @@ public class TaskScheduleIT {
 		try (Task task = tasks.builder().name(randomName("task")).definition("timestamp").create();
 			 TaskSchedule taskSchedule = schedules.builder().prefix(randomName("schedule")).task(task).create()) {
 
-			assertThat(taskSchedule.isScheduled()).isFalse();
+			assertThat(taskSchedule.isScheduled(this.platform)).isFalse();
 
 			logger.info("schedule-lifecycle-test: SCHEDULE");
-			taskSchedule.schedule(Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
+			taskSchedule.schedule(this.platform, Collections.singletonMap(DEFAULT_SCDF_EXPRESSION_KEY, DEFAULT_CRON_EXPRESSION));
 
-			assertThat(taskSchedule.isScheduled()).isTrue();
+			assertThat(taskSchedule.isScheduled(this.platform)).isTrue();
 
-			TaskSchedule retrievedSchedule = schedules.findByScheduleName(taskSchedule.getScheduleName());
+			TaskSchedule retrievedSchedule = schedules.findByScheduleName(taskSchedule.getScheduleName(), this.platform);
 			assertThat(retrievedSchedule.getScheduleName()).isEqualTo(taskSchedule.getScheduleName());
-			assertThat(retrievedSchedule.getScheduleProperties().containsKey(SchedulerPropertyKeys.CRON_EXPRESSION)).isTrue();
-			assertThat(retrievedSchedule.getScheduleProperties().get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
+			assertThat(retrievedSchedule.getScheduleProperties(this.platform).containsKey(SchedulerPropertyKeys.CRON_EXPRESSION)).isTrue();
+			assertThat(retrievedSchedule.getScheduleProperties(this.platform).get(SchedulerPropertyKeys.CRON_EXPRESSION)).isEqualTo(DEFAULT_CRON_EXPRESSION);
 
 			logger.info("schedule-lifecycle-test: UNSCHEDULE");
-			taskSchedule.unschedule();
+			taskSchedule.unschedule(this.platform);
 
-			assertThat(taskSchedule.isScheduled()).isFalse();
+			assertThat(taskSchedule.isScheduled(this.platform)).isFalse();
 		}
 	}
 

@@ -109,6 +109,7 @@ public class ApiDocumentation extends BaseDocumentation {
 				linkWithRel("tasks/executions/name").description("Returns all task executions for a given Task name"),
 				linkWithRel("tasks/executions/execution").description("Provides details for a specific task execution"),
 				linkWithRel("tasks/platforms").description("Provides platform accounts for launching tasks"),
+				linkWithRel("tasks/platforms/scheduler").description("Provides platform accounts for launching tasks that have an associated scheduler"),
 				linkWithRel("tasks/logs").description("Retrieve the task application log"),
 
 				linkWithRel("streams/definitions").description("Exposes the Streams resource"),
@@ -179,6 +180,7 @@ public class ApiDocumentation extends BaseDocumentation {
 						fieldWithPath("_links.streams/validation.templated").type(JsonFieldType.BOOLEAN).optional().description("Link streams/validation is templated"),
 
 						fieldWithPath("_links.tasks/platforms.href").description("Link to the tasks/platforms"),
+						fieldWithPath("_links.tasks/platforms/scheduler.href").description("Link to the tasks/platforms/scheduler"),
 
 						fieldWithPath("_links.tasks/definitions.href").description("Link to the tasks/definitions"),
 						fieldWithPath("_links.tasks/definitions/definition.href").description("Link to the tasks/definitions/definition"),

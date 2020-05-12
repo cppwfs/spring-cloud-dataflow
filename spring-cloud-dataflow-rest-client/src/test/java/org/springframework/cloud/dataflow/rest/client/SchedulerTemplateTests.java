@@ -48,6 +48,7 @@ public class SchedulerTemplateTests {
 	private RootResource rootResource;
 	private RestTemplate restTemplate;
 	private SchedulerTemplate template;
+	private String platform;
 
 	@Before
 	public void setup() {
@@ -62,7 +63,7 @@ public class SchedulerTemplateTests {
 	public void scheduleTest() {
 		Map<String, String> props = Collections.singletonMap("Hello", "World");
 		List<String> args = Collections.singletonList("args=vals");
-		template.schedule(DEFAULT_SCHEDULE_NAME, DEFAULT_DEFINITION_NAME, props, args);
+		template.schedule(DEFAULT_SCHEDULE_NAME, DEFAULT_DEFINITION_NAME, props, args, platform);
 
 		MultiValueMap<String, Object> values = new LinkedMultiValueMap<>();
 		values.add("scheduleName", DEFAULT_SCHEDULE_NAME);
@@ -74,25 +75,25 @@ public class SchedulerTemplateTests {
 
 	@Test
 	public void unScheduleTest() {
-		template.unschedule(DEFAULT_SCHEDULE_NAME);
+		template.unschedule(DEFAULT_SCHEDULE_NAME, platform);
 		Mockito.verify(restTemplate).delete(SCHEDULES_RELATION + "/testSchedule");
 	}
 
 	@Test
 	public void listTest() {
-		template.list();
+		template.list(platform);
 		Mockito.verify(restTemplate).getForObject(SCHEDULES_RELATION, ScheduleInfoResource.Page.class);
 	}
 
 	@Test
 	public void listTaskDefNameTest() {
-		template.list(DEFAULT_DEFINITION_NAME);
+		template.list(DEFAULT_DEFINITION_NAME, platform);
 		Mockito.verify(restTemplate).getForObject(SCHEDULES_RELATION_INSTANCE, ScheduleInfoResource.Page.class);
 	}
 
 	@Test
 	public void getScheduleTest() {
-		template.getSchedule(DEFAULT_SCHEDULE_NAME);
+		template.getSchedule(DEFAULT_SCHEDULE_NAME, platform);
 		Mockito.verify(restTemplate).getForObject(SCHEDULES_RELATION + "/" + DEFAULT_SCHEDULE_NAME,
 				ScheduleInfoResource.class);
 	}

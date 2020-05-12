@@ -134,6 +134,12 @@ public class CloudFoundryTaskPlatformFactoryTests {
 		CloudFoundrySchedulerProperties schedulerProperties = new CloudFoundrySchedulerProperties();
 		schedulerProperties.setSchedulerUrl("https://localhost:9999");
 
+
+		CloudFoundryProperties cloudFoundryProperties = this.cloudFoundryPlatformProperties.getAccounts().get("default");
+		CloudFoundrySchedulerProperties cloudFoundrySchedulerProperties = new CloudFoundrySchedulerProperties();
+		cloudFoundrySchedulerProperties.setSchedulerUrl("https://localhost:9999");
+		cloudFoundryProperties.setScheduler(cloudFoundrySchedulerProperties);
+
 		TaskPlatformFactory taskPlatformFactory = CloudFoundryTaskPlatformFactory
 				.builder()
 				.platformProperties(cloudFoundryPlatformProperties)

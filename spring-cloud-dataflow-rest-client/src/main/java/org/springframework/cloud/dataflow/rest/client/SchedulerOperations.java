@@ -46,36 +46,48 @@ public interface SchedulerOperations {
 	 * {@link org.springframework.cloud.dataflow.core.TaskDefinition} to be scheduled.
 	 * @param taskProperties  properties required for scheduling or launching a task.
 	 * @param commandLineArgs the command line args to be used when launching the task.
+	 * @param platform the name of the platform where the schedule should be created.
+	 * If left null and there is only one platform it will be used.
 	 */
 	void schedule(String scheduleName, String taskDefinitionName,
-			Map<String, String> taskProperties, List<String> commandLineArgs);
+			Map<String, String> taskProperties, List<String> commandLineArgs,
+			String platform);
 
 	/**
 	 *  Unschedule a schedule that has been created.
 	 *
 	 * @param scheduleName the name of the schedule to be removed.
+	 * @param platform the name of the platform where the schedule should be created.
+	 * If left null and there is only one platform it will be used.
 	 */
-	void unschedule(String scheduleName);
+	void unschedule(String scheduleName, String platform);
 
 	/**
 	 * List all of the Schedules associated with the provided TaskDefinition.
 	 *
 	 * @param taskDefinitionName to retrieve Schedules for a specified taskDefinitionName.
+	 * @param platform the name of the platform where the schedule should be created.
+	 * If left null and there is only one platform it will be used.
 	 * @return A List of Schedules configured for the provided taskDefinitionName.
 	 */
-	PagedModel<ScheduleInfoResource> list(String taskDefinitionName) ;
+	PagedModel<ScheduleInfoResource> list(String taskDefinitionName, String platform) ;
 
 	/**
 	 * List all of the schedules registered with the system.
 	 *
+	 * @param platform the name of the platform where the schedule should be created.
+	 * If left null and there is only one platform it will be used.
 	 * @return A List of Schedules for the given system.
 	 */
-	PagedModel<ScheduleInfoResource> list();
+	PagedModel<ScheduleInfoResource> list(String platform);
 
 	/**
 	 * Retrieves the {@link ScheduleInfo} for the specified ScheduleName.
 	 *
 	 * @param scheduleName the name of schedule to retrieve.
+	 * @param platform the name of the platform where the schedule should be created.
+	 * If left null and there is only one platform it will be used.
 	 * @return {@link ScheduleInfo} for the scheduleName passed in.
 	 */
-	ScheduleInfoResource getSchedule(String scheduleName);}
+	ScheduleInfoResource getSchedule(String scheduleName, String platform);
+}
