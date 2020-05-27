@@ -97,7 +97,7 @@ public class TaskSchedulerCommands implements CommandMarker {
 			@CliOption(key = { "definitionName" }, help = "the task definition name") String definitionName) {
 		PagedModel<ScheduleInfoResource> schedules;
 		if (Strings.isEmpty(definitionName)) {
-			schedules = scheduleOperations().list(platform);
+			schedules = scheduleOperations().listByPlatform(platform);
 		}
 		else {
 			schedules = scheduleOperations().list(definitionName, platform);

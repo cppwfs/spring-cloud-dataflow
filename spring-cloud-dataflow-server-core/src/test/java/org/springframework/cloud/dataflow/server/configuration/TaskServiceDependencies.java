@@ -309,7 +309,7 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 	@Bean
 	@Conditional({ SchedulerConfiguration.SchedulerConfigurationPropertyChecker.class })
 	public SchedulerService schedulerService(CommonApplicationProperties commonApplicationProperties,
-			TaskPlatform taskPlatform, TaskDefinitionRepository taskDefinitionRepository,
+			List<TaskPlatform> taskPlatforms, TaskDefinitionRepository taskDefinitionRepository,
 			AppRegistryService registry, ResourceLoader resourceLoader,
 			ApplicationConfigurationMetadataResolver metaDataResolver,
 			SchedulerServiceProperties schedulerServiceProperties,
@@ -317,7 +317,7 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 			TaskConfigurationProperties taskConfigurationProperties,
 			DataSourceProperties dataSourceProperties) {
 		return new DefaultSchedulerService(commonApplicationProperties,
-				Collections.singletonList(taskPlatform), taskDefinitionRepository,
+				taskPlatforms, taskDefinitionRepository,
 				registry, resourceLoader,
 				taskConfigurationProperties, dataSourceProperties, null,
 				metaDataResolver, schedulerServiceProperties, auditRecordService);
@@ -331,7 +331,6 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 		TaskPlatform taskPlatform = new TaskPlatform("testTaskPlatform", launchers);
 		return taskPlatform;
 	}
-
 
 	@Bean
 	public Scheduler scheduler() {

@@ -54,6 +54,26 @@ public interface SchedulerOperations {
 			String platform);
 
 	/**
+	 * Schedules the task specified with the taskDefinitionName with the
+	 * platform specific scheduler.  To setup the task with the scheduler set
+	 * the properties required to process the schedule within the taskProperties map.
+	 * Each scheduler property should be prefixed with
+	 * {@value org.springframework.cloud.deployer.spi.scheduler.SchedulerPropertyKeys#PREFIX}.
+	 * The schedule expression (cron for example)
+	 * are specified within the task properties using the
+	 * {@value org.springframework.cloud.deployer.spi.scheduler.SchedulerPropertyKeys#CRON_EXPRESSION} as the key
+	 * and the associated value would be the cron expression to be used.
+	 *
+	 * @param scheduleName A name to be associated with the schedule.
+	 * @param taskDefinitionName the name of the
+	 * {@link org.springframework.cloud.dataflow.core.TaskDefinition} to be scheduled.
+	 * @param taskProperties  properties required for scheduling or launching a task.
+	 * @param commandLineArgs the command line args to be used when launching the task.
+	 */
+	void schedule(String scheduleName, String taskDefinitionName,
+			Map<String, String> taskProperties, List<String> commandLineArgs);
+
+	/**
 	 *  Unschedule a schedule that has been created.
 	 *
 	 * @param scheduleName the name of the schedule to be removed.
@@ -61,6 +81,15 @@ public interface SchedulerOperations {
 	 * If left null and there is only one platform it will be used.
 	 */
 	void unschedule(String scheduleName, String platform);
+
+	/**
+	 *  Unschedule a schedule that has been created.
+	 *
+	 * @param scheduleName the name of the schedule to be removed.
+	 * If left null and there is only one platform it will be used.
+	 */
+	void unschedule(String scheduleName);
+
 
 	/**
 	 * List all of the Schedules associated with the provided TaskDefinition.
@@ -72,6 +101,22 @@ public interface SchedulerOperations {
 	 */
 	PagedModel<ScheduleInfoResource> list(String taskDefinitionName, String platform) ;
 
+
+	/**
+	 * List all of the Schedules associated with the provided TaskDefinition for the default platform.
+	 *
+	 * @param taskDefinitionName to retrieve Schedules for a specified taskDefinitionName.
+	 * @return A List of Schedules configured for the provided taskDefinitionName.
+	 */
+	PagedModel<ScheduleInfoResource> list(String taskDefinitionName) ;
+
+	/**
+	 * List all of the Schedules for the default platform.
+	 *
+	 * @return A List of Schedules configured for the provided taskDefinitionName.
+	 */
+	PagedModel<ScheduleInfoResource> list() ;
+
 	/**
 	 * List all of the schedules registered with the system.
 	 *
@@ -79,7 +124,7 @@ public interface SchedulerOperations {
 	 * If left null and there is only one platform it will be used.
 	 * @return A List of Schedules for the given system.
 	 */
-	PagedModel<ScheduleInfoResource> list(String platform);
+	PagedModel<ScheduleInfoResource> listByPlatform(String platform);
 
 	/**
 	 * Retrieves the {@link ScheduleInfo} for the specified ScheduleName.
@@ -90,4 +135,13 @@ public interface SchedulerOperations {
 	 * @return {@link ScheduleInfo} for the scheduleName passed in.
 	 */
 	ScheduleInfoResource getSchedule(String scheduleName, String platform);
+
+	/**
+	 * Retrieves the {@link ScheduleInfo} for the specified ScheduleName for the default platform.
+	 *
+	 * @param scheduleName the name of schedule to retrieve.
+	 * If left null and there is only one platform it will be used.
+	 * @return {@link ScheduleInfo} for the scheduleName passed in.
+	 */
+	ScheduleInfoResource getSchedule(String scheduleName);
 }

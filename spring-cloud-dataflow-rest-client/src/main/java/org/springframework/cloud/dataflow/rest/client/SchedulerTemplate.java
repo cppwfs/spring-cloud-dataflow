@@ -74,12 +74,22 @@ public class SchedulerTemplate implements SchedulerOperations {
 	}
 
 	@Override
+	public void schedule(String scheduleName, String taskDefinitionName, Map<String, String> taskProperties, List<String> commandLineArgs) {
+		schedule(scheduleName, taskDefinitionName, taskProperties, commandLineArgs, null);
+	}
+
+	@Override
 	public void unschedule(String scheduleName, String platform) {
 		String url = schedulesLink.getHref() + "/" + scheduleName;
 		if(platform != null) {
 			url = url + "?platform=" + platform;
 		}
 		restTemplate.delete(url);
+	}
+
+	@Override
+	public void unschedule(String scheduleName) {
+		unschedule(scheduleName, null);
 	}
 
 	@Override
@@ -92,12 +102,22 @@ public class SchedulerTemplate implements SchedulerOperations {
 	}
 
 	@Override
-	public PagedModel<ScheduleInfoResource> list(String platform) {
+	public PagedModel<ScheduleInfoResource> list(String taskDefinitionName) {
+		return list(taskDefinitionName, null);
+	}
+
+	@Override
+	public PagedModel<ScheduleInfoResource> listByPlatform(String platform) {
 		String url = schedulesLink.getHref();
 		if(platform != null) {
 			url = url + "?platform=" + platform;
 		}
 		return restTemplate.getForObject(url, ScheduleInfoResource.Page.class);
+	}
+
+	@Override
+	public PagedModel<ScheduleInfoResource> list() {
+		return listByPlatform(null);
 	}
 
 	@Override
@@ -107,5 +127,10 @@ public class SchedulerTemplate implements SchedulerOperations {
 			url = url + "?platform=" + platform;
 		}
 		return restTemplate.getForObject(url, ScheduleInfoResource.class);
+	}
+
+	@Override
+	public ScheduleInfoResource getSchedule(String scheduleName) {
+		return getSchedule(scheduleName, null);
 	}
 }

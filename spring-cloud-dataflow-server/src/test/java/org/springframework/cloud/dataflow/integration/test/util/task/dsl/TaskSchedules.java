@@ -58,7 +58,7 @@ public class TaskSchedules {
 	}
 
 	public List<TaskSchedule> list(String platform) {
-		return this.schedulerOperations.list(platform).getContent().stream()
+		return this.schedulerOperations.listByPlatform(platform).getContent().stream()
 				.map(s -> {
 					Task task = this.tasks.get(s.getTaskDefinitionName());
 					String prefix = s.getScheduleName().replace("-scdf-" + task.getTaskName(), "");
