@@ -108,9 +108,18 @@ public interface SchedulerService {
 	 * List all of the schedules registered with the system.
 	 *
 	 * @param pageable Establish the pagination setup for the result set.
+	 * @param platformName the name of the platform where schedules will be obtained.
 	 * @return Paged items of schedules.
 	 */
 	Page<ScheduleInfo> list(Pageable pageable, String platformName);
+
+	/**
+	 * List all of the schedules registered with the default platform.
+	 *
+	 * @param pageable Establish the pagination setup for the result set.
+	 * @return Paged items of schedules.
+	 */
+	Page<ScheduleInfo> list(Pageable pageable);
 
 	/**
 	 * List all of the Schedules associated with the provided TaskDefinition up to the
@@ -154,4 +163,12 @@ public interface SchedulerService {
 	 * @return {@link ScheduleInfo} for the scheduleName passed in.
 	 */
 	ScheduleInfo getSchedule(String scheduleName, String platformName);
+
+	/**
+	 * Retrieves the {@link ScheduleInfo} for the specified ScheduleName from the default platform.
+	 *
+	 * @param scheduleName the name of schedule to retrieve.
+	 * @return {@link ScheduleInfo} for the scheduleName passed in.
+	 */
+	ScheduleInfo getSchedule(String scheduleName);
 }

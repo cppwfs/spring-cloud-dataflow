@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -233,6 +233,23 @@ public class DefaultSchedulerServiceMultiplatformTests {
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 1));
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 2));
 		verifyScheduleExistsInScheduler(createScheduleInfo(BASE_SCHEDULE_NAME + 3));
+	}
+
+	@Test
+	public void testGetSchedule(){
+		schedulerService.schedule(BASE_SCHEDULE_NAME + 1,
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, KUBERNETES_PLATFORM);
+		schedulerService.schedule(BASE_SCHEDULE_NAME + 2,
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, KUBERNETES_PLATFORM);
+		schedulerService.schedule(BASE_SCHEDULE_NAME + 3,
+				BASE_DEFINITION_NAME, this.testProperties, this.commandLineArgs, KUBERNETES_PLATFORM);
+
+		ScheduleInfo schedule = schedulerService.getSchedule(BASE_SCHEDULE_NAME + 1, KUBERNETES_PLATFORM);
+		verifyScheduleExistsInScheduler(schedule);
+		schedule = schedulerService.getSchedule(BASE_SCHEDULE_NAME + 2, KUBERNETES_PLATFORM);
+		verifyScheduleExistsInScheduler(schedule);
+		schedule = schedulerService.getSchedule(BASE_SCHEDULE_NAME + 3, KUBERNETES_PLATFORM);
+		verifyScheduleExistsInScheduler(schedule);
 	}
 
 	@Test

@@ -297,6 +297,11 @@ public class DefaultSchedulerService implements SchedulerService {
 	}
 
 	@Override
+	public Page<ScheduleInfo> list(Pageable pageable) {
+		throw new UnsupportedOperationException("method not supported");
+	}
+
+	@Override
 	public List<ScheduleInfo> list(String taskDefinitionName, String platformName) {
 		Launcher launcher = getTaskLauncher(platformName);
 		List<ScheduleInfo> list = launcher.getScheduler().list();
@@ -336,6 +341,11 @@ public class DefaultSchedulerService implements SchedulerService {
 				.collect(Collectors.toList());
 		Assert.isTrue(!(result.size() > 1), "more than one schedule was returned for scheduleName, should only be one");
 		return result.size() > 0 ? result.get(0) : null;
+	}
+
+	@Override
+	public ScheduleInfo getSchedule(String scheduleName) {
+		return getSchedule(scheduleName, null);
 	}
 
 	private List<ScheduleInfo> limitScheduleInfoResultSize(List<ScheduleInfo> resultSet,

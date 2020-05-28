@@ -20,7 +20,12 @@ import org.springframework.cloud.dataflow.core.Launcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-
+/**
+ * Offers services to retrieve the launchers that are available for the
+ * Spring Cloud Data Flow instance.
+ *
+ * @author Glenn Renfro
+ */
 public interface LauncherService {
 
 	/**

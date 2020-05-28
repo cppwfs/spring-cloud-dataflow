@@ -274,12 +274,17 @@ public abstract class BaseDocumentation {
 			}
 
 			@Override
+			public Page<ScheduleInfo> list(Pageable pageable) {
+				return null;
+			}
+
+			@Override
 			public List<ScheduleInfo> list(String taskDefinitionName, String platformName) {
 				return getSampleList();
 			}
 
 			@Override
-			public List<ScheduleInfo> list(String platformName) {
+			public List<ScheduleInfo> list(String taskDefinitionName) {
 				return getSampleList();
 			}
 
@@ -295,6 +300,11 @@ public abstract class BaseDocumentation {
 
 			@Override
 			public ScheduleInfo getSchedule(String scheduleName, String platformName) {
+				return null;
+			}
+
+			@Override
+			public ScheduleInfo getSchedule(String scheduleName) {
 				return null;
 			}
 		};

@@ -35,10 +35,12 @@ public class DefaultLauncherService implements LauncherService {
 		this.launcherRepository = launcherRepository;
 	}
 
+	@Override
 	public Page<Launcher> getAllLaunchers(Pageable pageable) {
 		return this.launcherRepository.findAll(pageable);
 	}
 
+	@Override
 	public Page<Launcher> getLaunchersWithSchedules(Pageable pageable) {
 		Iterable<Launcher> allLaunchers = this.launcherRepository.findAll();
 		List<Launcher> launchers = new ArrayList<>();

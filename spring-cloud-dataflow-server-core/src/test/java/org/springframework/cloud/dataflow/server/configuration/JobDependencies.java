@@ -446,6 +446,11 @@ public class JobDependencies {
 			}
 
 			@Override
+			public Page<ScheduleInfo> list(Pageable pageable) {
+				return null;
+			}
+
+			@Override
 			public List<ScheduleInfo> list(String taskDefinitionName, String platformName) {
 				return null;
 			}
@@ -467,6 +472,11 @@ public class JobDependencies {
 
 			@Override
 			public ScheduleInfo getSchedule(String scheduleName, String platformName) {
+				return null;
+			}
+
+			@Override
+			public ScheduleInfo getSchedule(String scheduleName) {
 				return null;
 			}
 		};

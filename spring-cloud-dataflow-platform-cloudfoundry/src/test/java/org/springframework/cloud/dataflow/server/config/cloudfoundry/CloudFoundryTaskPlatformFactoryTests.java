@@ -80,13 +80,13 @@ public class CloudFoundryTaskPlatformFactoryTests {
 
 	@Before
 	public void setUp() throws Exception {
-		when(cloudFoundryClient.info())
+		when(this.cloudFoundryClient.info())
 				.thenReturn(getInfoRequest -> Mono.just(GetInfoResponse.builder().apiVersion("0.0.0").build()));
-		when(cloudFoundryClient.organizations()).thenReturn(mock(Organizations.class));
-		when(cloudFoundryClient.spaces()).thenReturn(mock(Spaces.class));
-		when(cloudFoundryClient.organizations().list(any())).thenReturn(listOrganizationsResponse());
-		when(cloudFoundryClient.spaces().list(any())).thenReturn(listSpacesResponse());
-		when(cloudFoundryClientProvider.cloudFoundryClient(anyString())).thenReturn(cloudFoundryClient);
+		when(this.cloudFoundryClient.organizations()).thenReturn(mock(Organizations.class));
+		when(this.cloudFoundryClient.spaces()).thenReturn(mock(Spaces.class));
+		when(this.cloudFoundryClient.organizations().list(any())).thenReturn(listOrganizationsResponse());
+		when(this.cloudFoundryClient.spaces().list(any())).thenReturn(listSpacesResponse());
+		when(this.cloudFoundryClientProvider.cloudFoundryClient(anyString())).thenReturn(this.cloudFoundryClient);
 		this.cloudFoundryPlatformProperties = new CloudFoundryPlatformProperties();
 
 		this.defaultConnectionProperties = new CloudFoundryConnectionProperties();
@@ -103,10 +103,10 @@ public class CloudFoundryTaskPlatformFactoryTests {
 		setupSinglePlatform();
 		TaskPlatformFactory taskPlatformFactory = CloudFoundryTaskPlatformFactory
 				.builder()
-				.platformProperties(cloudFoundryPlatformProperties)
-				.platformTokenProvider(platformTokenProvider)
-				.connectionContextProvider(connectionContextProvider)
-				.cloudFoundryClientProvider(cloudFoundryClientProvider)
+				.platformProperties(this.cloudFoundryPlatformProperties)
+				.platformTokenProvider(this.platformTokenProvider)
+				.connectionContextProvider(this.connectionContextProvider)
+				.cloudFoundryClientProvider(this.cloudFoundryClientProvider)
 				.build();
 
 		TaskPlatform taskPlatform = taskPlatformFactory.createTaskPlatform();

@@ -69,8 +69,6 @@ public class CloudFoundryTaskPlatformAutoConfiguration {
 	}
 
 	@Bean
-//	@ConditionalOnCloudPlatform(CloudPlatform.CLOUD_FOUNDRY)
-//	@Conditional(SchedulerConfigurationPropertyChecker.class)
 	public CloudFoundrySchedulerClientProvider schedulerClientProvider(
 			CloudFoundryPlatformConnectionContextProvider connectionContextProvider,
 			CloudFoundryPlatformTokenProvider platformTokenProvider,
