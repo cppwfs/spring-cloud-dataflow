@@ -85,7 +85,7 @@ public class TaskSchedulerController {
 	public PagedModel<ScheduleInfoResource> list(Pageable pageable,
 			@RequestParam(value = "platform", required = false) String platform,
 			PagedResourcesAssembler<ScheduleInfo> assembler) {
-		List<ScheduleInfo> result = this.schedulerService.list(platform);
+		List<ScheduleInfo> result = this.schedulerService.listForPlatform(platform);
 		return assembler.toModel(new PageImpl<>(result, pageable, result.size()), taskAssembler);
 	}
 

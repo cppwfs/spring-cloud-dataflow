@@ -85,7 +85,7 @@ public class TaskScheduleCommandTemplate {
 		scheduleInfo.setTaskDefinitionName("testDefinition");
 		scheduleInfo.setScheduleProperties(Collections.EMPTY_MAP);
 
-		when(schedule.list(null)).thenReturn(Arrays.asList(scheduleInfo));
+		when(schedule.listForPlatform(null)).thenReturn(Arrays.asList(scheduleInfo));
 
 		String wholeCommand = "task schedule list";
 		CommandResult cr = dataFlowShell.executeCommand(wholeCommand);

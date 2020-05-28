@@ -17,7 +17,6 @@
 package org.springframework.cloud.dataflow.server.configuration;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.sql.DataSource;

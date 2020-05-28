@@ -128,6 +128,12 @@ public class DefaultSchedulerService implements SchedulerService {
 
 	@Override
 	public void schedule(String scheduleName, String taskDefinitionName, Map<String, String> taskDeploymentProperties,
+			List<String> commandLineArgs) {
+		schedule(scheduleName, taskDefinitionName, taskDeploymentProperties, commandLineArgs, null);
+	}
+
+	@Override
+	public void schedule(String scheduleName, String taskDefinitionName, Map<String, String> taskDeploymentProperties,
 			List<String> commandLineArgs, String platformName) {
 		Assert.hasText(taskDefinitionName, "The provided taskName must not be null or empty.");
 		Assert.notNull(taskDeploymentProperties, "The provided taskDeploymentProperties must not be null.");
@@ -192,9 +198,6 @@ public class DefaultSchedulerService implements SchedulerService {
 		Launcher launcherToUse = null;
 		List<Launcher> launchers = getLaunchers();
 		for (Launcher launcher : launchers) {
-			if(launcher.getScheduler() == null) {
-				System.out.println("Skipping->" + launcher.getName());
-			}
 			if (launcher.getName().equalsIgnoreCase(platformName)) {
 				launcherToUse = launcher;
 				break;
@@ -258,8 +261,6 @@ public class DefaultSchedulerService implements SchedulerService {
 		final ScheduleInfo scheduleInfo = getSchedule(scheduleName, platformName);
 		if (scheduleInfo != null) {
 			Launcher launcher = getTaskLauncher(platformName);
-			System.out.println("******" + scheduleName + "********" + platformName);
-			System.out.println("******" + launcher.getScheduler());
 			launcher.getScheduler().unschedule(scheduleInfo.getScheduleName());
 			this.auditRecordService.populateAndSaveAuditRecord(
 					AuditOperationType.SCHEDULE,
@@ -270,10 +271,14 @@ public class DefaultSchedulerService implements SchedulerService {
 	}
 
 	@Override
+	public void unschedule(String scheduleName) {
+		unschedule(scheduleName, null);
+	}
+
+	@Override
 	public void unscheduleForTaskDefinition(String taskDefinitionName) {
 		for (Launcher launcher : getLaunchers()) {
-			System.out.println("****unscheduleTD*******>>>>>>>>" + launcher.getName());
-			for(ScheduleInfo scheduleInfo : list(launcher.getName())) {
+			for(ScheduleInfo scheduleInfo : listForPlatform(launcher.getName())) {
 				if(scheduleInfo.getTaskDefinitionName().equals(taskDefinitionName)) {
 					unschedule(scheduleInfo.getScheduleName(), launcher.getName());
 				}
@@ -306,15 +311,27 @@ public class DefaultSchedulerService implements SchedulerService {
 	}
 
 	@Override
-	public List<ScheduleInfo> list(String platformName) {
+	public List<ScheduleInfo> list(String taskDefinitionName) {
+		return list(taskDefinitionName, null);
+	}
+
+	@Override
+	public List<ScheduleInfo> listForPlatform(String platformName) {
 		Launcher launcher = getTaskLauncher(platformName);
 		return limitScheduleInfoResultSize(launcher.getScheduler().list(),
 				this.schedulerServiceProperties.getMaxSchedulesReturned());
 	}
 
 	@Override
+	public List<ScheduleInfo> list() {
+		Launcher launcher = getTaskLauncher(null);
+		return limitScheduleInfoResultSize(launcher.getScheduler().list(),
+				this.schedulerServiceProperties.getMaxSchedulesReturned());
+	}
+
+	@Override
 	public ScheduleInfo getSchedule(String scheduleName, String platformName) {
-		List<ScheduleInfo> result = list(platformName).stream()
+		List<ScheduleInfo> result = listForPlatform(platformName).stream()
 				.filter(scheduleInfo -> scheduleInfo.getScheduleName().equals(scheduleName))
 				.collect(Collectors.toList());
 		Assert.isTrue(!(result.size() > 1), "more than one schedule was returned for scheduleName, should only be one");

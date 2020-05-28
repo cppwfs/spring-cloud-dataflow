@@ -245,6 +245,16 @@ public abstract class BaseDocumentation {
 			}
 
 			@Override
+			public void schedule(String scheduleName, String taskDefinitionName, Map<String, String> taskProperties, List<String> commandLineArgs) {
+
+			}
+
+			@Override
+			public void unschedule(String scheduleName) {
+
+			}
+
+			@Override
 			public void unschedule(String scheduleName, String platformName) {
 			}
 
@@ -271,6 +281,16 @@ public abstract class BaseDocumentation {
 			@Override
 			public List<ScheduleInfo> list(String platformName) {
 				return getSampleList();
+			}
+
+			@Override
+			public List<ScheduleInfo> listForPlatform(String platformName) {
+				return getSampleList();
+			}
+
+			@Override
+			public List<ScheduleInfo> list() {
+				return null;
 			}
 
 			@Override
