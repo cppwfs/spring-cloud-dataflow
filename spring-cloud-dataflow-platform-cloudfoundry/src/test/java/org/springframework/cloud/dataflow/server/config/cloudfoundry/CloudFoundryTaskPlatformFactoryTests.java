@@ -130,7 +130,7 @@ public class CloudFoundryTaskPlatformFactoryTests {
 		cloudFoundrySchedulerProperties.setSchedulerUrl("https://localhost:9999");
 		cloudFoundryProperties.setScheduler(cloudFoundrySchedulerProperties);
 
-		TaskPlatform taskPlatform = getSchedulePlatform("default", cloudFoundrySchedulerProperties);
+		TaskPlatform taskPlatform = getSchedulePlatform("default");
 		assertThat(taskPlatform.getLaunchers()).hasSize(1);
 		Launcher launcher = taskPlatform.getLaunchers().get(0);
 		validateBasicLauncherInfo(launcher, "default");
@@ -178,10 +178,8 @@ public class CloudFoundryTaskPlatformFactoryTests {
 		when(this.platformTokenProvider.tokenProvider(anyString())).thenReturn(mock(TokenProvider.class));
 	}
 
+
 	private TaskPlatform getSchedulePlatform(String platformName) {
-		return getSchedulePlatform(platformName, null);
-	}
-	private TaskPlatform getSchedulePlatform(String platformName, CloudFoundrySchedulerProperties scheduler) {
 		CloudFoundryProperties cloudFoundryProperties = this.cloudFoundryPlatformProperties.getAccounts().get(platformName);
 
 		TaskPlatformFactory taskPlatformFactory = CloudFoundryTaskPlatformFactory
