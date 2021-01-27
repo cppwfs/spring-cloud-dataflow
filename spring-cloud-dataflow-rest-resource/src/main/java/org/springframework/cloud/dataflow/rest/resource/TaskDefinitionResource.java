@@ -51,16 +51,22 @@ public class TaskDefinitionResource extends RepresentationModel<TaskDefinitionRe
 	private TaskExecutionResource lastTaskExecution;
 
 	/**
+	 * The percentage of tasks that have completed for a composed task.
+	 */
+	private Double ctrTaskCompletePercent;
+
+	/**
 	 * Default constructor to be used by Jackson.
 	 */
 	@SuppressWarnings("unused")
 	protected TaskDefinitionResource() {
 	}
 
-	public TaskDefinitionResource(String name, String dslText, String description) {
+	public TaskDefinitionResource(String name, String dslText, String description, Double ctrTaskCompletePercent) {
 		this.name = name;
 		this.dslText = dslText;
 		this.description = description;
+		this.ctrTaskCompletePercent = ctrTaskCompletePercent;
 	}
 
 	public String getName() {

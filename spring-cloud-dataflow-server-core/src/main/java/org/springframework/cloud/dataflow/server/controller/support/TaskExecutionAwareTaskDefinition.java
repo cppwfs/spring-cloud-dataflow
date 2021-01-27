@@ -32,6 +32,11 @@ public class TaskExecutionAwareTaskDefinition {
 	final TaskExecution latestTaskExecution;
 
 	/**
+	 * The percentage of tasks that have completed for a composed task.
+	 */
+	private Double ctrTaskCompletePercent;
+
+	/**
 	 * Initialized the {@link TaskExecutionAwareTaskDefinition} with the provided
 	 * {@link TaskDefinition} and {@link TaskExecution}.
 	 *
@@ -39,6 +44,18 @@ public class TaskExecutionAwareTaskDefinition {
 	 * @param latestTaskExecution Must not be null
 	 */
 	public TaskExecutionAwareTaskDefinition(TaskDefinition taskDefinition, TaskExecution latestTaskExecution) {
+		this(taskDefinition, latestTaskExecution, null);
+	}
+
+	/**
+	 * Initialized the {@link TaskExecutionAwareTaskDefinition} with the provided
+	 * {@link TaskDefinition} and {@link TaskExecution}.
+	 *
+	 * @param taskDefinition Must not be null
+	 * @param latestTaskExecution Must not be null
+	 * @param ctrTaskCompletePercent the task complete percentage for a composed task execution.
+	 */
+	public TaskExecutionAwareTaskDefinition(TaskDefinition taskDefinition, TaskExecution latestTaskExecution, Double ctrTaskCompletePercent) {
 		super();
 
 		Assert.notNull(taskDefinition, "The provided taskDefinition must not be null.");
@@ -46,6 +63,7 @@ public class TaskExecutionAwareTaskDefinition {
 
 		this.taskDefinition = taskDefinition;
 		this.latestTaskExecution = latestTaskExecution;
+		this.ctrTaskCompletePercent = ctrTaskCompletePercent;
 	}
 
 	/**
@@ -80,5 +98,14 @@ public class TaskExecutionAwareTaskDefinition {
 	 */
 	public TaskExecution getLatestTaskExecution() {
 		return latestTaskExecution;
+	}
+
+	/**
+	 * Returns the current percentage of tasks complete for composed task task.
+	 * @return double if value present.  Or null if no value is present.
+	 */
+
+	public Double getCtrTaskCompletePercent() {
+		return ctrTaskCompletePercent;
 	}
 }
