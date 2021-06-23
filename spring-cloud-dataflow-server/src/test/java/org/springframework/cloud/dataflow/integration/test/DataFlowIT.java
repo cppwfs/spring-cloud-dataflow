@@ -1244,7 +1244,7 @@ public class DataFlowIT {
 
 			long launchId = task.launch(composedTaskLaunchArguments());
 
-			if (runtimeApps.dataflowServerVersionLowerThan("2.8.0-SNAPSHOT")) {
+			if (runtimeApps.dataflowServerVersionLowerThan("2.8.0-SNAPSHOT") && !runtimeApps.getDataflowServerVersion().getNormalVersion().equals("2.8.0")) {
 				Awaitility.await().until(() -> task.executionStatus(launchId) == TaskExecutionStatus.COMPLETE);
 			}
 			else {
@@ -1365,8 +1365,8 @@ public class DataFlowIT {
 					.hasSameElementsAs(fullTaskNames(task, "b1", "t1"));
 
 			long launchId = task.launch(composedTaskLaunchArguments());
-
-			if (runtimeApps.dataflowServerVersionLowerThan("2.8.0-SNAPSHOT")) {
+			String s = runtimeApps.getDataflowServerVersion().getNormalVersion();
+			if (runtimeApps.dataflowServerVersionLowerThan("2.8.0-SNAPSHOT") && !runtimeApps.getDataflowServerVersion().getNormalVersion().equals("2.8.0")) {
 				Awaitility.await().until(() -> task.executionStatus(launchId) == TaskExecutionStatus.COMPLETE);
 			}
 			else {
@@ -1374,7 +1374,7 @@ public class DataFlowIT {
 			}
 
 			// Parent Task
-			assertThat(task.executions().size()).isEqualTo(1);
+				assertThat(task.executions().size()).isEqualTo(1);
 			assertThat(task.execution(launchId).get().getExitCode()).isEqualTo(EXIT_CODE_SUCCESS);
 			task.executions().forEach(execution -> assertThat(execution.getExitCode()).isEqualTo(EXIT_CODE_SUCCESS));
 
@@ -1447,7 +1447,7 @@ public class DataFlowIT {
 
 			long launchId = task.launch(composedTaskLaunchArguments());
 
-			if (runtimeApps.dataflowServerVersionLowerThan("2.8.0-SNAPSHOT")) {
+			if (runtimeApps.dataflowServerVersionLowerThan("2.8.0-SNAPSHOT") && !runtimeApps.getDataflowServerVersion().getNormalVersion().equals("2.8.0")) {
 				Awaitility.await().until(() -> task.executionStatus(launchId) == TaskExecutionStatus.COMPLETE);
 			}
 			else {
