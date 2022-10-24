@@ -137,9 +137,11 @@ public class ComposedTaskRunnerStepFactory implements FactoryBean<Step> {
 		Map<String, String> propertiesToUse = new HashMap<>();
 		propertiesToUse.putAll(this.taskSpecificProps);
 		propertiesToUse.putAll(propertiesFrom);
-
-		taskLauncherTasklet.setProperties(propertiesToUse);
-		log.debug("Properties to use {}", propertiesToUse);
+		for (String keyValue : propertiesToUse.keySet()) {
+			System.out.println("KEY-> " + keyValue + " <-> " + propertiesToUse.get(keyValue));
+		}
+			 taskLauncherTasklet.setProperties(propertiesToUse);
+			 log.debug("Properties to use {}", propertiesToUse);
 
 		String stepName = this.taskName;
 

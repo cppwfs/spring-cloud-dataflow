@@ -642,6 +642,11 @@ In this case, set the Spring Cloud Data Flow `spring.cloud.dataflow.task.useUser
 To set a property for Composed Task Runner you will need to prefix the property with `app.composed-task-runner.`.
 For example to set the `dataflow-server-uri` property the property will look like `app.composed-task-runner.dataflow-server-uri`.
 
+[NOTE]
+====
+When launching composed tasks on Kubernetes and you need to pass properties and environment variables, use the `boot` entry point style.
+====
+
 === The Lifecycle of a Composed Task
 
 The lifecycle of a composed task has three parts:
