@@ -60,6 +60,7 @@ import org.springframework.cloud.dataflow.registry.support.AppResourceCommon;
 import org.springframework.cloud.dataflow.rest.support.jackson.ISO8601DateFormatWithMilliSeconds;
 import org.springframework.cloud.dataflow.rest.support.jackson.Jackson2DataflowModule;
 import org.springframework.cloud.dataflow.server.DockerValidatorProperties;
+import org.springframework.cloud.dataflow.server.batch.BatchVersion;
 import org.springframework.cloud.dataflow.server.batch.JobService;
 import org.springframework.cloud.dataflow.server.batch.SimpleJobServiceFactoryBean;
 import org.springframework.cloud.dataflow.server.config.apps.CommonApplicationProperties;
@@ -345,7 +346,7 @@ public class JobDependencies {
 	public SimpleJobServiceFactoryBean simpleJobServiceFactoryBean(DataSource dataSource,
 			JobRepositoryFactoryBean repositoryFactoryBean, JobExplorer jobExplorer,
 			PlatformTransactionManager dataSourceTransactionManager) {
-		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean();
+		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean(BatchVersion.FOUR);
 		factoryBean.setDataSource(dataSource);
 		try {
 			factoryBean.setJobRepository(repositoryFactoryBean.getObject());

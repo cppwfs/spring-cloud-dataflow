@@ -82,6 +82,12 @@ public class SimpleJobServiceFactoryBean implements FactoryBean<JobService>, Ini
 
 	private PlatformTransactionManager transactionManager;
 
+	private final BatchVersion batchVersion;
+
+	public SimpleJobServiceFactoryBean(BatchVersion batchVersion) {
+		this.batchVersion = batchVersion;
+	}
+
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 	}
@@ -219,7 +225,7 @@ public class SimpleJobServiceFactoryBean implements FactoryBean<JobService>, Ini
 	}
 
 	protected SearchableJobExecutionDao createJobExecutionDao() throws Exception {
-		JdbcSearchableJobExecutionDao dao = new JdbcSearchableJobExecutionDao();
+		JdbcSearchableJobExecutionDao dao = new JdbcSearchableJobExecutionDao(batchVersion);
 		dao.setDataSource(dataSource);
 		dao.setJobExecutionIncrementer(incrementerFactory.getIncrementer(databaseType, tablePrefix
 				+ "JOB_EXECUTION_SEQ"));

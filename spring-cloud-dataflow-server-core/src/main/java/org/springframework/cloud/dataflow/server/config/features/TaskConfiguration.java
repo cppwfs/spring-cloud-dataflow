@@ -34,6 +34,7 @@ import org.springframework.cloud.dataflow.configuration.metadata.ApplicationConf
 import org.springframework.cloud.dataflow.core.TaskPlatform;
 import org.springframework.cloud.dataflow.registry.service.AppRegistryService;
 import org.springframework.cloud.dataflow.server.DockerValidatorProperties;
+import org.springframework.cloud.dataflow.server.batch.BatchVersion;
 import org.springframework.cloud.dataflow.server.batch.JobService;
 import org.springframework.cloud.dataflow.server.batch.SimpleJobServiceFactoryBean;
 import org.springframework.cloud.dataflow.server.config.apps.CommonApplicationProperties;
@@ -172,7 +173,7 @@ public class TaskConfiguration {
 	public SimpleJobServiceFactoryBean simpleJobServiceFactoryBean(DataSource dataSource,
 			JobRepositoryFactoryBean repositoryFactoryBean, JobExplorer jobExplorer,
 			PlatformTransactionManager dataSourceTransactionManager) throws Exception {
-		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean();
+		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean(BatchVersion.FOUR);
 		factoryBean.setDataSource(dataSource);
 		factoryBean.setJobRepository(repositoryFactoryBean.getObject());
 		factoryBean.setJobLauncher(new SimpleJobLauncher());

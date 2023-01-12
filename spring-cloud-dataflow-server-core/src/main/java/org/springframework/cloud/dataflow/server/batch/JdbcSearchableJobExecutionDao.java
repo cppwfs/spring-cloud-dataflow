@@ -30,13 +30,18 @@ import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.JobParameter;
+import org.springframework.batch.core.JobParameter.ParameterType;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.repository.dao.JdbcJobExecutionDao;
 import org.springframework.batch.item.database.Order;
 import org.springframework.batch.item.database.PagingQueryProvider;
 import org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean;
+import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.incrementer.AbstractDataFieldMaxValueIncrementer;
 import org.springframework.util.Assert;
@@ -49,6 +54,8 @@ import org.springframework.util.Assert;
  */
 public class JdbcSearchableJobExecutionDao extends JdbcJobExecutionDao implements SearchableJobExecutionDao {
 
+	private static final String BATCH_V5_FIND_PARAMS_FROM_ID = "SELECT JOB_EXECUTION_ID, PARAMETER_NAME, PARAMETER_TYPE, "
+			+ "PARAMETER_VALUE, IDENTIFYING from %PREFIX%JOB_EXECUTION_PARAMS where JOB_EXECUTION_ID = ?";
 	private static final String GET_COUNT = "SELECT COUNT(1) from %PREFIX%JOB_EXECUTION";
 
 	private static final String GET_COUNT_BY_JOB_NAME = "SELECT COUNT(1) from %PREFIX%JOB_EXECUTION E, %PREFIX%JOB_INSTANCE I "
@@ -105,6 +112,13 @@ public class JdbcSearchableJobExecutionDao extends JdbcJobExecutionDao implement
 	private PagingQueryProvider byTaskExecutionIdWithStepCountPagingQueryProvider;
 
 	private DataSource dataSource;
+
+	private BatchVersion batchVersion;
+	private ConfigurableConversionService conversionService = new DefaultConversionService();
+
+	public JdbcSearchableJobExecutionDao(BatchVersion batchVersion) {
+		this.batchVersion = batchVersion;
+	}
 
 	/**
 	 * @param dataSource the dataSource to set
@@ -195,6 +209,58 @@ public class JdbcSearchableJobExecutionDao extends JdbcJobExecutionDao implement
 		factory.setWhereClause(whereClause);
 
 		return factory.getObject();
+	}
+
+	@Override
+	protected JobParameters getJobParameters(Long executionId) {
+		switch (batchVersion) {
+			case FOUR:
+				return super.getJobParameters(executionId);
+			case FIVE:
+				return getJobParameters5(executionId);
+		}
+		// Should never be thrown
+		throw new RuntimeException("Unexpected enum value of BatchVersion = " + batchVersion);
+	}
+
+	private JobParameters getJobParameters5(Long executionId) {
+		// Copied from Batch 5.x code base and modified to use 4.x JobParameter class
+		final Map<String, JobParameter> map = new HashMap<>();
+		RowCallbackHandler handler = new RowCallbackHandler() {
+			@Override
+			public void processRow(ResultSet rs) throws SQLException {
+				String parameterName = rs.getString("PARAMETER_NAME");
+
+				Class<?> parameterType = null;
+				try {
+					parameterType = Class.forName(rs.getString("PARAMETER_TYPE"));
+				}
+				catch (ClassNotFoundException e) {
+					throw new RuntimeException(e);
+				}
+				String stringValue = rs.getString("PARAMETER_VALUE");
+				Object typedValue = conversionService.convert(stringValue, parameterType);
+
+				boolean identifying = rs.getString("IDENTIFYING").equalsIgnoreCase("Y");
+				JobParameter jobParameter;
+				if (typedValue instanceof String) {
+					jobParameter = new JobParameter((String) typedValue, identifying);
+				} else if (typedValue instanceof Long) {
+					jobParameter = new JobParameter((Long) typedValue, identifying);
+				} else if (typedValue instanceof Double) {
+					jobParameter = new JobParameter((Double) typedValue, identifying);
+				} else if (typedValue instanceof Date) {
+					jobParameter = new JobParameter((Date) typedValue, identifying);
+				} else {
+					throw new RuntimeException("Unexpected type returned from conversion service. typedValue = " + typedValue.getClass());
+				}
+				map.put(parameterName, jobParameter);
+			}
+		};
+
+		getJdbcTemplate().query(getQuery(BATCH_V5_FIND_PARAMS_FROM_ID), handler, executionId);
+
+		return new JobParameters(map);
 	}
 
 	/**
