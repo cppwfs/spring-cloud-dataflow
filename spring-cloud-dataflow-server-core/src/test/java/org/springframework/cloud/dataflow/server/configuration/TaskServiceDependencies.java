@@ -413,7 +413,7 @@ public class TaskServiceDependencies extends WebMvcConfigurationSupport {
 
 	@Bean
 	public JobExecutionDao jobExecutionDao(DataSource dataSource) {
-		JdbcSearchableJobExecutionDao jdbcSearchableJobExecutionDao = new JdbcSearchableJobExecutionDao(BatchVersion.FOUR);
+		JdbcSearchableJobExecutionDao jdbcSearchableJobExecutionDao = new JdbcSearchableJobExecutionDao(BatchVersion.FIVE);
 		jdbcSearchableJobExecutionDao.setDataSource(dataSource);
 		return jdbcSearchableJobExecutionDao;
 	}

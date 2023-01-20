@@ -346,7 +346,7 @@ public class JobDependencies {
 	public SimpleJobServiceFactoryBean simpleJobServiceFactoryBean(DataSource dataSource,
 			JobRepositoryFactoryBean repositoryFactoryBean, JobExplorer jobExplorer,
 			PlatformTransactionManager dataSourceTransactionManager) {
-		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean(BatchVersion.FOUR);
+		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean(BatchVersion.FIVE);
 		factoryBean.setDataSource(dataSource);
 		try {
 			factoryBean.setJobRepository(repositoryFactoryBean.getObject());

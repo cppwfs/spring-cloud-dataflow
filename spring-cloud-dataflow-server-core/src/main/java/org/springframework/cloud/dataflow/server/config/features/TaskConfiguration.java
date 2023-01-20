@@ -173,7 +173,7 @@ public class TaskConfiguration {
 	public SimpleJobServiceFactoryBean simpleJobServiceFactoryBean(DataSource dataSource,
 			JobRepositoryFactoryBean repositoryFactoryBean, JobExplorer jobExplorer,
 			PlatformTransactionManager dataSourceTransactionManager) throws Exception {
-		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean(BatchVersion.FOUR);
+		SimpleJobServiceFactoryBean factoryBean = new SimpleJobServiceFactoryBean(BatchVersion.FIVE);
 		factoryBean.setDataSource(dataSource);
 		factoryBean.setJobRepository(repositoryFactoryBean.getObject());
 		factoryBean.setJobLauncher(new SimpleJobLauncher());
