@@ -1,0 +1,103 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+
+interface ScdfJobService {
++ScdfJobExecution launch(String jobName, JobParameters params)
++ScdfJobExecution launch(String jobName, JobParameters params, String prefix)
++JobParameters getLastJobParameters(String jobName)
++JobParameters getLastJobParameters(String jobName, String prefix)
++ScdfJobExecution restart(String jobExecutionId)
++ScdfJobExecution restart(String jobExecutionId, JobParameters params)
++ScdfJobExecution stop(String jobExecutionId)
++ScdfJobExecution abandon(String jobExecutionId)
++ScdfJobInstance getJobInstance(String jobInstanceId)
++Collection<ScdfJobInstance> listJobInstances(String jobName, int start, int count)
++Collection<ScdfJobInstance> listJobInstances(String jobName, int start, int count, String prefix)
++int countJobInstances(String jobName)
++int countJobInstances(String jobName, String prefix)
++Collection<ScdfJobExecutionWithStepCount> listJobExecutionsForJobWithStepCount(String jobName, int start, int count)
++Collection<ScdfJobExecutionWithStepCount> listJobExecutionsForJobWithStepCount(String jobName, int start, int count, String prefix)
++int countJobExecutionsForJob(String jobName, BatchStatus status)
++int countJobExecutionsForJob(String jobName, BatchStatus status, String prefix)
++Collection<ScdfJobExecution> getJobExecutionsForJobInstance(String jobName, String jobInstanceId)
++ScdfJobExecution getJobExecution(String jobExecutionId)
++Collection<StepExecution> getStepExecutions(String jobExecutionId)
++Collection<StepExecution> listStepExecutionsForStep(String jobName, String stepName, int start, int count)
++Collection<StepExecution> listStepExecutionsForStep(String jobName, String stepName, int start, int count, String prefix)
++int countStepExecutionsForStep(String jobName, String stepName)
++int countStepExecutionsForStep(String jobName, String stepName, String prefix)
++int countStepExecutionsForJobExecution(String jobExecutionId)
++StepExecution getStepExecution(String jobExecutionId, Long stepExecutionId)
++Collection<ScdfJobExecution> listJobExecutionsForJob(String jobName, BatchStatus status, int pageOffset, int pageSize)
++Collection<ScdfJobExecution> listJobExecutionsForJob(String jobName, BatchStatus status, int pageOffset, int pageSize, String prefix)
++Collection<ScdfJobExecutionWithStepCount> listJobExecutionsForJobWithStepCountFilteredByJobInstanceId(String jobInstanceId, int start, int count)
++Collection<ScdfJobExecutionWithStepCount> listJobExecutionsForJobWithStepCountFilteredByTaskExecutionId(int taskExecutionId, int start, int count)
+}
+note top of ScdfJobService: For methods that specify only a job name we need to pass in a prefix.\nNote that the original method definition is kept. \n
+note top of ScdfJobService: If a method uses jobExecutionId or jobInstanceId the type is changed \nfrom Long to String as we discussed.
+
+note bottom of ScdfJobService: JobService returns ScdfJobInstance or ScdfJobExecution so that so that the prefix is known.
+
+
+class ScdfSimpleJobService {
+}
+
+ScdfJobService  <|-- ScdfSimpleJobService
+
+
+class JobInstance
+
+class ScdfJobInstance {
+String prefix
+}
+
+JobInstance <|-- ScdfJobInstance
+
+class JobExecution
+
+class ScdfJobExecution {
+String prefix
+}
+
+JobExecution <|-- ScdfJobExecution
+
+
+
+interface JobService {
++ScdfJobExecution launch(String jobName, JobParameters params)
++JobParameters getLastJobParameters(String jobName)
++ScdfJobExecution restart(String jobExecutionId)
++ScdfJobExecution restart(String jobExecutionId, JobParameters params)
++ScdfJobExecution stop(String jobExecutionId)
++ScdfJobExecution abandon(String jobExecutionId)
++ScdfJobInstance getJobInstance(String jobInstanceId)
++Collection<ScdfJobInstance> listJobInstances(String jobName, int start, int count)
++int countJobInstances(String jobName)
++Collection<ScdfJobExecutionWithStepCount> listJobExecutionsForJobWithStepCount(String jobName, int start, int count)
++int countJobExecutionsForJob(String jobName, BatchStatus status)
++int countJobExecutionsForJob(String jobName, BatchStatus status, String prefix)
++Collection<ScdfJobExecution> getJobExecutionsForJobInstance(String jobName, String jobInstanceId)
++ScdfJobExecution getJobExecution(String jobExecutionId)
++Collection<StepExecution> getStepExecutions(String jobExecutionId)
++Collection<StepExecution> listStepExecutionsForStep(String jobName, String stepName, int start, int count)
++int countStepExecutionsForStep(String jobName, String stepName)
++int countStepExecutionsForJobExecution(String jobExecutionId)
++StepExecution getStepExecution(String jobExecutionId, Long stepExecutionId)
++Collection<ScdfJobExecution> listJobExecutionsForJob(String jobName, BatchStatus status, int pageOffset, int pageSize)
++Collection<ScdfJobExecutionWithStepCount> listJobExecutionsForJobWithStepCountFilteredByJobInstanceId(String jobInstanceId, int start, int count)
+}
+
+note top of JobService: Represents the interface to be used by the prefixed beans that query the prefixed db
+
+
+class V4SimpleJobService {
+}
+class V5SimpleJobService {
+}
+
+JobService  <|-- V4SimpleJobService
+JobService  <|-- V5SimpleJobService
+
+@enduml
