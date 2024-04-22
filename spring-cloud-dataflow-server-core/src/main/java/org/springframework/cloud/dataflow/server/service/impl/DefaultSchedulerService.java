@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -317,6 +318,13 @@ public class DefaultSchedulerService implements SchedulerService {
 		taskDeploymentProperties = extractAndQualifySchedulerProperties(taskDeploymentProperties);
 		deployerDeploymentProperties.putAll(taskDeploymentProperties);
 		scheduleName = validateScheduleNameForPlatform(launcher.getType(), scheduleName);
+		System.out.println("***** PRINTING DEPLOYER PROPERTIES");
+		deployerDeploymentProperties.forEach(new BiConsumer<String, String>() {
+			@Override
+			public void accept(String s, String s2) {
+				System.out.println("********** " + s + "<<<>>>" + s2);
+			}
+		});
 		ScheduleRequest scheduleRequest = new ScheduleRequest(revisedDefinition,
 				deployerDeploymentProperties,
 				commandLineArgs,
