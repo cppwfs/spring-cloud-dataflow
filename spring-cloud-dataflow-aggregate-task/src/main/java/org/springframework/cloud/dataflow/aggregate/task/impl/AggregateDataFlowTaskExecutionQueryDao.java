@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
@@ -88,6 +89,9 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 
 	private static final String FIND_TASK_ARGUMENTS = "SELECT TASK_EXECUTION_ID, "
 			+ "TASK_PARAM from AGGREGATE_TASK_EXECUTION_PARAMS where TASK_EXECUTION_ID = :taskExecutionId and SCHEMA_TARGET = :schemaTarget";
+
+	private static final String FIND_TASKS_ARGUMENTS = "SELECT TASK_EXECUTION_ID, "
+		+ "TASK_PARAM from AGGREGATE_TASK_EXECUTION_PARAMS where TASK_EXECUTION_ID IN (:taskExecutionIds) and SCHEMA_TARGET = :schemaTarget";
 
 	private static final String GET_EXECUTIONS = "SELECT " + SELECT_CLAUSE +
 			" from AGGREGATE_TASK_EXECUTION";
@@ -217,7 +221,7 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 			return this.jdbcTemplate.queryForObject(
 					GET_EXECUTION_BY_EXTERNAL_EXECUTION_ID,
 					queryParameters,
-					new CompositeTaskExecutionRowMapper()
+					new CompositeTaskExecutionRowMapper(true)
 			);
 		} catch (EmptyResultDataAccessException e) {
 			return null;
@@ -234,7 +238,7 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 			return this.jdbcTemplate.queryForObject(
 					GET_EXECUTION_BY_ID,
 					queryParameters,
-					new CompositeTaskExecutionRowMapper()
+					new CompositeTaskExecutionRowMapper(true)
 			);
 		} catch (EmptyResultDataAccessException e) {
 			return null;
@@ -251,7 +255,7 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 			return this.jdbcTemplate.query(
 					GET_CHILD_EXECUTION_BY_ID,
 					queryParameters,
-					new CompositeTaskExecutionRowMapper()
+					new CompositeTaskExecutionRowMapper(true)
 			);
 		} catch (EmptyResultDataAccessException e) {
 			return null;
@@ -265,26 +269,44 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 				.addValue("schemaTarget", "--spring.cloud.task.parent-schema-target=" + schemaTarget);
 
 		try {
-			return this.jdbcTemplate.query(
-					GET_CHILD_EXECUTION_BY_IDS,
-					queryParameters,
-					new CompositeTaskExecutionRowMapper()
+			List<AggregateTaskExecution> result = this.jdbcTemplate.query(
+				GET_CHILD_EXECUTION_BY_IDS,
+				queryParameters,
+				new CompositeTaskExecutionRowMapper(false)
 			);
+			populateArguments(schemaTarget, result);
+			return result;
 		} catch (EmptyResultDataAccessException e) {
 			return null;
 		}
 	}
 
+	private void populateArguments(String schemaTarget, List<AggregateTaskExecution> result) {
+		List<Long> ids = result.stream().map(AggregateTaskExecution::getExecutionId).collect(Collectors.toList());
+		Map<Long, List<String>> paramMap = getTaskArgumentsForTasks(ids, schemaTarget);
+		result.forEach(aggregateTaskExecution -> {
+			List<String> params = paramMap.get(aggregateTaskExecution.getExecutionId());
+			if(params != null) {
+				aggregateTaskExecution.setArguments(params);
+			}
+		});
+	}
+
 	@Override
 	public List<AggregateTaskExecution> findTaskExecutions(String taskName, boolean completed) {
+		List<AggregateTaskExecution> result;
 		if (StringUtils.hasLength(taskName)) {
 			final SqlParameterSource queryParameters = new MapSqlParameterSource()
 					.addValue("taskName", taskName);
 			String query = completed ? GET_EXECUTIONS_BY_NAME_COMPLETED : GET_EXECUTIONS_BY_NAME;
-			return this.jdbcTemplate.query(query, queryParameters, new CompositeTaskExecutionRowMapper());
+			result = this.jdbcTemplate.query(query, queryParameters, new CompositeTaskExecutionRowMapper(false));
 		} else {
-			return this.jdbcTemplate.query(completed ? GET_EXECUTIONS_COMPLETED : GET_EXECUTIONS, Collections.emptyMap(), new CompositeTaskExecutionRowMapper());
+			result = this.jdbcTemplate.query(completed ? GET_EXECUTIONS_COMPLETED : GET_EXECUTIONS, Collections.emptyMap(), new CompositeTaskExecutionRowMapper(false));
 		}
+		result.stream()
+			.collect(Collectors.groupingBy(AggregateTaskExecution::getSchemaTarget))
+			.forEach(this::populateArguments);
+		return result;
 	}
 
 	@Override
@@ -294,7 +316,11 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 				.addValue("endTime", endTime);
 		String query;
 		query = taskName.isEmpty() ? GET_EXECUTIONS_COMPLETED_BEFORE_END_TIME : GET_EXECUTION_BY_NAME_COMPLETED_BEFORE_END_TIME;
-		return this.jdbcTemplate.query(query, queryParameters, new CompositeTaskExecutionRowMapper());
+		List<AggregateTaskExecution> result = this.jdbcTemplate.query(query, queryParameters, new CompositeTaskExecutionRowMapper(false));
+		result.stream()
+			.collect(Collectors.groupingBy(AggregateTaskExecution::getSchemaTarget))
+			.forEach(this::populateArguments);
+		return result;
 	}
 
 	@Override
@@ -404,7 +430,11 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 		try {
 			final Map<String, List<String>> paramMap = Collections
 					.singletonMap("taskNames", taskNamesAsList);
-			return this.jdbcTemplate.query(LAST_TASK_EXECUTIONS_BY_TASK_NAMES, paramMap, new CompositeTaskExecutionRowMapper());
+			List<AggregateTaskExecution> result = this.jdbcTemplate.query(LAST_TASK_EXECUTIONS_BY_TASK_NAMES, paramMap, new CompositeTaskExecutionRowMapper(false));
+			result.stream()
+				.collect(Collectors.groupingBy(AggregateTaskExecution::getSchemaTarget))
+				.forEach(this::populateArguments);
+			return result;
 		} catch (EmptyResultDataAccessException e) {
 			return Collections.emptyList();
 		}
@@ -441,14 +471,14 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 		return queryForPageableResults(pageable, SELECT_CLAUSE, FROM_CLAUSE,
 				RUNNING_TASK_WHERE_CLAUSE,
 				new MapSqlParameterSource("taskName", taskName),
-				getRunningTaskExecutionCountByTaskName(taskName));
+				getRunningTaskExecutionCountByTaskName(taskName), false);
 	}
 
 	@Override
 	public Page<AggregateTaskExecution> findTaskExecutionsByName(String taskName, Pageable pageable) {
 		return queryForPageableResults(pageable, SELECT_CLAUSE, FROM_CLAUSE,
 				TASK_NAME_WHERE_CLAUSE, new MapSqlParameterSource("taskName", taskName),
-				getTaskExecutionCountByTaskName(taskName));
+				getTaskExecutionCountByTaskName(taskName), false);
 	}
 
 	@Override
@@ -460,9 +490,14 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 	@Override
 	public Page<AggregateTaskExecution> findAll(Pageable pageable) {
 		return queryForPageableResults(pageable, SELECT_CLAUSE, FROM_CLAUSE, null,
-				new MapSqlParameterSource(), getTaskExecutionCount());
+				new MapSqlParameterSource(), getTaskExecutionCount(), false);
 	}
 
+	@Override
+	public Page<AggregateTaskExecution> findAll(Pageable pageable, boolean thinResults) {
+		return queryForPageableResults(pageable, SELECT_CLAUSE, FROM_CLAUSE, null,
+			new MapSqlParameterSource(), getTaskExecutionCount(), thinResults);
+	}
 
 	private Page<AggregateTaskExecution> queryForPageableResults(
 			Pageable pageable,
@@ -470,7 +505,8 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 			String fromClause,
 			String whereClause,
 			MapSqlParameterSource queryParameters,
-			long totalCount
+			long totalCount,
+			boolean thinResults
 	) {
 		SqlPagingQueryProviderFactoryBean factoryBean = new SqlPagingQueryProviderFactoryBean();
 		factoryBean.setSelectClause(selectClause);
@@ -509,15 +545,19 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 		}
 		String query = pagingQueryProvider.getPageQuery(pageable);
 		List<AggregateTaskExecution> resultList = this.jdbcTemplate.query(query,
-				queryParameters, new CompositeTaskExecutionRowMapper());
+				queryParameters, new CompositeTaskExecutionRowMapper(!thinResults));
+		resultList.stream()
+			.collect(Collectors.groupingBy(AggregateTaskExecution::getSchemaTarget))
+			.forEach(this::populateArguments);
 		return new PageImpl<>(resultList, pageable, totalCount);
 	}
 
 
 	private class CompositeTaskExecutionRowMapper implements RowMapper<AggregateTaskExecution> {
-
-		private CompositeTaskExecutionRowMapper() {
-		}
+		final boolean mapRow;
+		private CompositeTaskExecutionRowMapper(boolean mapRow) {
+            this.mapRow = mapRow;
+        }
 
 		@Override
 		public AggregateTaskExecution mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -536,10 +576,11 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 					rs.getTimestamp("START_TIME"),
 					rs.getTimestamp("END_TIME"),
 					rs.getString("EXIT_MESSAGE"),
-					getTaskArguments(id, schemaTarget),
+					mapRow ? getTaskArguments(id, schemaTarget) : Collections.emptyList(),
 					rs.getString("ERROR_MESSAGE"),
 					rs.getString("EXTERNAL_EXECUTION_ID"),
 					parentExecutionId,
+					null,
 					null,
 					schemaTarget
 			);
@@ -554,11 +595,25 @@ public class AggregateDataFlowTaskExecutionQueryDao implements DataflowTaskExecu
 	private List<String> getTaskArguments(long taskExecutionId, String schemaTarget) {
 		final List<String> params = new ArrayList<>();
 		RowCallbackHandler handler = rs -> params.add(rs.getString(2));
+		MapSqlParameterSource parameterSource = new MapSqlParameterSource("taskExecutionId", taskExecutionId)
+			.addValue("schemaTarget", schemaTarget);
 		this.jdbcTemplate.query(
 				FIND_TASK_ARGUMENTS,
-				new MapSqlParameterSource("taskExecutionId", taskExecutionId)
-						.addValue("schemaTarget", schemaTarget),
+				parameterSource,
 				handler);
 		return params;
+	}
+	private Map<Long, List<String>> getTaskArgumentsForTasks(Collection<Long> taskExecutionIds, String schemaTarget) {
+		if(taskExecutionIds.isEmpty()) {
+			return Collections.emptyMap();
+		} else {
+			final Map<Long, List<String>> result = new HashMap<>();
+			RowCallbackHandler handler = rs -> result.computeIfAbsent(rs.getLong(1), a -> new ArrayList<>())
+				.add(rs.getString(2));
+			MapSqlParameterSource parameterSource = new MapSqlParameterSource("taskExecutionIds", taskExecutionIds)
+				.addValue("schemaTarget", schemaTarget);
+			this.jdbcTemplate.query(FIND_TASKS_ARGUMENTS, parameterSource, handler);
+			return result;
+		}
 	}
 }

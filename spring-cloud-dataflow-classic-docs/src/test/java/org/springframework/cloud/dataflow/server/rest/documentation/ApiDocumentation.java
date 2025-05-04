@@ -18,7 +18,7 @@ package org.springframework.cloud.dataflow.server.rest.documentation;
 
 import javax.servlet.RequestDispatcher;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.dataflow.rest.Version;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Gunnar Hillert
  * @author Christian Tzolov
  * @author Ilayaperumal Gopinathan
+ * @author Corneil du Plessis
  */
 @SuppressWarnings("NewClassNamingConvention")
 public class ApiDocumentation extends BaseDocumentation {
@@ -58,7 +59,6 @@ public class ApiDocumentation extends BaseDocumentation {
 						.requestAttr(RequestDispatcher.ERROR_REQUEST_URI, "/apps").requestAttr(
 								RequestDispatcher.ERROR_MESSAGE,
 								"The app 'http://localhost:8080/apps/123' does " + "not exist"))
-				.andDo(print())
 				.andExpect(status().isBadRequest()).andExpect(jsonPath("error", is("Bad Request")))
 				.andExpect(jsonPath("timestamp", is(notNullValue()))).andExpect(jsonPath("status", is(400)))
 				.andExpect(jsonPath("path", is(notNullValue())))
@@ -75,7 +75,6 @@ public class ApiDocumentation extends BaseDocumentation {
 	@Test
 	public void index() throws Exception {
 		this.mockMvc.perform(get("/"))
-				.andDo(print())
 				.andExpect(status().isOk())
 				.andDo(this.documentationHandler.document(links(
 				linkWithRel("about").description(
@@ -124,6 +123,7 @@ public class ApiDocumentation extends BaseDocumentation {
 				linkWithRel("tasks/executions/execution").description("Provides details for a specific task execution"),
 				linkWithRel("tasks/platforms").description("Provides platform accounts for launching tasks.  The results can be filtered to show the platforms that support scheduling by adding a request parameter of 'schedulesEnabled=true"),
 				linkWithRel("tasks/logs").description("Retrieve the task application log"),
+				linkWithRel("tasks/thinexecutions").description("Returns thin Task executions"),
 
 				linkWithRel("schema/versions").description("List of Spring Boot related schemas"),
 				linkWithRel("schema/targets").description("List of schema targets"),
@@ -231,6 +231,8 @@ public class ApiDocumentation extends BaseDocumentation {
 
 						fieldWithPath("_links.tasks/logs.href").description("Link to the tasks/logs"),
 						fieldWithPath("_links.tasks/logs.templated").type(JsonFieldType.BOOLEAN).optional().description("Link tasks/logs is templated"),
+
+						fieldWithPath("_links.tasks/thinexecutions.href").description("Link to the tasks/thinexecutions"),
 
 						fieldWithPath("_links.tasks/schedules.href").description("Link to the tasks/executions/schedules"),
 						fieldWithPath("_links.tasks/schedules/instances.href").description("Link to the tasks/schedules/instances"),

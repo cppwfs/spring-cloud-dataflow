@@ -24,12 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -53,7 +51,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -64,7 +61,6 @@ import static org.mockito.Mockito.when;
  * @author Glenn Renfro
  * @author Corneil du Plessis
  */
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { TaskServiceDependencies.class }, properties = {
 		"spring.main.allow-bean-definition-overriding=true" })
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -126,7 +122,7 @@ public class TaskExecutionExplorerTests {
 		insertTestExecutionDataIntoRepo(template, 1L, "foo");
 		insertTestExecutionDataIntoRepo(template, 0L, "foo");
 
-		List<AggregateTaskExecution> resultList = explorer.findAll(PageRequest.of(0, 10)).getContent();
+		List<AggregateTaskExecution> resultList = explorer.findAll(PageRequest.of(0, 10), true).getContent();
 		assertThat(resultList.size()).isEqualTo(ENTRY_COUNT);
 		Map<String, AggregateTaskExecution> actual = new HashMap<>();
 		for (AggregateTaskExecution taskExecution : resultList) {
@@ -164,7 +160,7 @@ public class TaskExecutionExplorerTests {
 		insertTestExecutionDataIntoRepo(template, 1L, "baz");
 		insertTestExecutionDataIntoRepo(template, 0L, "fee");
 
-		List<AggregateTaskExecution> resultList = explorer.findAll(PageRequest.of(0, 10, Sort.by("SCHEMA_TARGET"))).getContent();
+		List<AggregateTaskExecution> resultList = explorer.findAll(PageRequest.of(0, 10, Sort.by("SCHEMA_TARGET")), true).getContent();
 		assertThat(resultList.size()).isEqualTo(4);
 		List<Long> ids = resultList.stream().map(AggregateTaskExecution::getExecutionId).collect(Collectors.toList());
 		assertThat(ids).containsExactly(0L, 2L, 3L, 1L);

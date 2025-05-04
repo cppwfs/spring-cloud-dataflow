@@ -28,10 +28,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -99,7 +99,6 @@ import org.springframework.core.io.FileUrlResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.StringUtils;
 
@@ -130,7 +129,6 @@ import static org.mockito.Mockito.when;
  * @author Chris Schaefer
  * @author Corneil du Plessis
  */
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {TaskServiceDependencies.class}, properties = {"spring.main.allow-bean-definition-overriding=true"})
 @ExtendWith(OutputCaptureExtension.class)
 public abstract class DefaultTaskExecutionServiceTests {
@@ -1383,7 +1381,6 @@ public abstract class DefaultTaskExecutionServiceTests {
 			"spring.cloud.dataflow.applicationProperties.stream.globalstreamkey=nothere"
 	})
 	@AutoConfigureTestDatabase(replace = Replace.ANY)
-
 	public static class ComposedTaskTests extends DefaultTaskExecutionServiceTests {
 
 		@Autowired
@@ -1557,6 +1554,7 @@ public abstract class DefaultTaskExecutionServiceTests {
 			for (String argument : request.getCommandlineArguments()) {
 				if (argument.contains("--dataflow-server-access-token")) {
 					containsArgument = true;
+					break;
 				}
 			}
 

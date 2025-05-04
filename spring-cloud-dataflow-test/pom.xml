@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-dataflow-parent</artifactId>
-		<version>2.11.3-SNAPSHOT</version>
+		<version>2.11.5-SNAPSHOT</version>
 		<relativePath>../spring-cloud-dataflow-parent</relativePath>
 	</parent>
 	<artifactId>spring-cloud-dataflow-test</artifactId>
@@ -17,6 +17,10 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-dataflow-core-dsl</artifactId>
@@ -31,13 +35,19 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.10.0</version>
+		</dependency>
+
 		<!-- Testcontainers requires junit4 for some reason, and because our parent provides junit4 at 'test' scope,
 		     it confuses dep. resolution and Testcontainers can not find the junit4 things it needs, this manually
 		     brings in the junit4 at 'compile' scope -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>postgresql</artifactId>
@@ -61,10 +71,6 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>db2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
 		</dependency>
 	</dependencies>
 

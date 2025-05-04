@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -32,6 +32,8 @@ import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.EmbeddedDataSourceConfiguration;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.cloud.common.security.CommonSecurityAutoConfiguration;
 import org.springframework.cloud.dataflow.composedtaskrunner.configuration.DataFlowTestConfiguration;
 import org.springframework.cloud.dataflow.composedtaskrunner.properties.ComposedTaskProperties;
@@ -39,9 +41,8 @@ import org.springframework.cloud.dataflow.rest.client.TaskOperations;
 import org.springframework.cloud.task.configuration.TaskProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.Assert;
 
@@ -52,17 +53,17 @@ import static org.mockito.Mockito.verify;
 /**
  * @author Glenn Renfro
  */
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes={EmbeddedDataSourceConfiguration.class,
-		DataFlowTestConfiguration.class,StepBeanDefinitionRegistrar.class,
+@SpringJUnitConfig(classes = {EmbeddedDataSourceConfiguration.class,
+		DataFlowTestConfiguration.class, StepBeanDefinitionRegistrar.class,
 		ComposedTaskRunnerConfiguration.class,
 		StepBeanDefinitionRegistrar.class})
 @TestPropertySource(properties = {"graph=ComposedTest-AAA && ComposedTest-BBB && ComposedTest-CCC","max-wait-time=1010",
 		"composed-task-properties=" + ComposedTaskRunnerConfigurationWithPropertiesTests.COMPOSED_TASK_PROPS ,
 		"interval-time-between-checks=1100", "composed-task-arguments=--baz=boo --AAA.foo=bar BBB.que=qui",
 		"transaction-isolation-level=ISOLATION_READ_COMMITTED","spring.cloud.task.closecontext-enabled=true",
-		"dataflow-server-uri=https://bar", "spring.cloud.task.name=ComposedTest"})
+		"dataflow-server-uri=https://bar", "spring.cloud.task.name=ComposedTest","max-start-wait-time=1011"})
 @EnableAutoConfiguration(exclude = { CommonSecurityAutoConfiguration.class})
+@ExtendWith(OutputCaptureExtension.class)
 public class ComposedTaskRunnerConfigurationWithPropertiesTests {
 
 	@Autowired
@@ -81,12 +82,15 @@ public class ComposedTaskRunnerConfigurationWithPropertiesTests {
 	ApplicationContext context;
 
 	protected static final String COMPOSED_TASK_PROPS = "app.ComposedTest-AAA.format=yyyy, "
-			+ "app.ComposedTest-BBB.format=mm, "
-			+ "deployer.ComposedTest-AAA.memory=2048m";
+		+ "app.ComposedTest-AAA.spring.cloud.task.table-prefix=BOOT3_,"
+		+ "app.ComposedTest-BBB.spring.cloud.task.tableprefix=BOOT3_,"
+		+ "app.ComposedTest-CCC.spring.cloud.task.tablePrefix=BOOT3_,"
+		+ "app.ComposedTest-BBB.format=mm, "
+		+ "deployer.ComposedTest-AAA.memory=2048m";
 
 	@Test
 	@DirtiesContext
-	public void testComposedConfiguration() throws Exception {
+	public void testComposedConfiguration(CapturedOutput outputCapture) throws Exception {
 		assertThat(composedTaskProperties.isSkipTlsCertificateVerification()).isFalse();
 
 		JobExecution jobExecution = this.jobRepository.createJobExecution(
@@ -100,8 +104,11 @@ public class ComposedTaskRunnerConfigurationWithPropertiesTests {
 		Map<String, String> props = new HashMap<>(1);
 		props.put("format", "yyyy");
 		props.put("memory", "2048m");
+		props.put("spring.cloud.task.table-prefix", "BOOT3_");
+
 		assertThat(composedTaskProperties.getComposedTaskProperties()).isEqualTo(COMPOSED_TASK_PROPS);
 		assertThat(composedTaskProperties.getMaxWaitTime()).isEqualTo(1010);
+		assertThat(composedTaskProperties.getMaxStartWaitTime()).isEqualTo(1011);
 		assertThat(composedTaskProperties.getIntervalTimeBetweenChecks()).isEqualTo(1100);
 		assertThat(composedTaskProperties.getDataflowServerUri().toASCIIString()).isEqualTo("https://bar");
 		assertThat(composedTaskProperties.getTransactionIsolationLevel()).isEqualTo("ISOLATION_READ_COMMITTED");
@@ -112,6 +119,14 @@ public class ComposedTaskRunnerConfigurationWithPropertiesTests {
 		args.add("--spring.cloud.task.parent-execution-id=1");
 		args.add("--spring.cloud.task.parent-schema-target=boot2");
 		Assert.notNull(job.getJobParametersIncrementer(), "JobParametersIncrementer must not be null.");
+
 		verify(taskOperations).launch("ComposedTest-AAA", props, args);
+
+		String logEntries = outputCapture.toString();
+		assertThat(logEntries).contains("taskExplorerContainer:adding:ComposedTest-AAA:BOOT3_");
+
+		assertThat(logEntries).contains("taskExplorerContainer:adding:ComposedTest-BBB:BOOT3_");
+		assertThat(logEntries).contains("taskExplorerContainer:adding:ComposedTest-CCC:BOOT3_");
+
 	}
 }

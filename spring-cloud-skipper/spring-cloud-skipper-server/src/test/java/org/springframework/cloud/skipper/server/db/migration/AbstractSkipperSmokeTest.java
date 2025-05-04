@@ -21,12 +21,14 @@ import javax.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.common.security.CommonSecurityAutoConfiguration;
 import org.springframework.cloud.deployer.spi.cloudfoundry.CloudFoundryDeployerAutoConfiguration;
 import org.springframework.cloud.deployer.spi.kubernetes.KubernetesAutoConfiguration;
 import org.springframework.cloud.deployer.spi.local.LocalDeployerAutoConfiguration;
@@ -59,6 +61,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 	"logging.level.org.springframework.cloud=info",
 	"logging.level.org.hibernate=debug"
 })
+@Testcontainers
 public abstract class AbstractSkipperSmokeTest {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractSkipperSmokeTest.class);
 
@@ -128,7 +131,8 @@ public abstract class AbstractSkipperSmokeTest {
 	@SpringBootApplication(exclude = {CloudFoundryDeployerAutoConfiguration.class,
 		LocalDeployerAutoConfiguration.class,
 		KubernetesAutoConfiguration.class,
-		SessionAutoConfiguration.class
+		SessionAutoConfiguration.class,
+		CommonSecurityAutoConfiguration.class
 	})
 	@EnableSkipperServer
 	public static class LocalTestSkipperServer {

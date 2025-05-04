@@ -12,12 +12,21 @@ if [ "$1" = "" ]; then
     echo "<database> must be provided. Choose one of postgresql or mariadb"
     exit 1
 fi
+JDBC_URL="jdbc:$DATABASE://$DATABASE.$DATABASE/dataflow"
 case $1 in
 "postgresql" | "postgres")
     DATABASE=postgresql
     ;;
 "mariadb" | "maria")
     DATABASE=mariadb
+    ;;
+#"oracle")
+#    DATABASE=oracle
+#    JDBC_URL="jdbc:oracle:thin:@oracle.oracle:1521"
+#    ;;
+"mysql57")
+    DATABASE=mysql57
+    JDBC_URL="jdbc:mysql://$DATABASE.$DATABASE/dataflow?permitMysqlScheme"
     ;;
 *)
     echo "Unsupported or invalid database $1"
@@ -30,18 +39,18 @@ if [ ! -d "$K8S" ]; then
   K8S=$(realpath $SCDIR/../../kubernetes)
 fi
 set +e
-$SCDIR/prepare-local-namespace.sh "$DATABASE-sa" $DATABASE
+$SCDIR/prepare-local-namespace.sh $DATABASE "$DATABASE-sa"
 
 kubectl create --namespace $DATABASE -f $K8S/$DATABASE/
 set -e
 kubectl rollout status deployment --namespace "$DATABASE" $DATABASE
 set +e
 
-JDBC_URL="jdbc:$DATABASE://$DATABASE.$DATABASE/dataflow"
 "$SCDIR/configure-database.sh" dataflow $DATABASE "$JDBC_URL" $DATABASE database-username database-password
 "$SCDIR/configure-database.sh" skipper $DATABASE "$JDBC_URL" $DATABASE database-username database-password
 export DATABASE
 echo "Deployed $DATABASE. Host:$DATABASE.$DATABASE"
+
 FILE="$(mktemp).yml"
 cat >$FILE <<EOF
 apiVersion: secretgen.carvel.dev/v1alpha1
@@ -57,6 +66,7 @@ if [ "$DEBUG" = "true" ]; then
     cat $FILE
 fi
 kubectl apply -f $FILE
+
 "$SCDIR/carvel-import-secret.sh" "$DATABASE" "$NS" "$DATABASE" --import
 end_time=$(date +%s)
 elapsed=$((end_time - start_time))

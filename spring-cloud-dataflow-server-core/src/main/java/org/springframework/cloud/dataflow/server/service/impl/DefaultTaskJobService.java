@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,6 +200,13 @@ public class DefaultTaskJobService implements TaskJobService {
 	}
 
 	@Override
+	public Map<Long, Set<Long>> getJobExecutionIdsByTaskExecutionIds(Collection<Long> taskExecutionIds, String schemaTarget) {
+		JobService jobService = this.jobServiceContainer.get(schemaTarget);
+		Assert.notNull(jobService, ()->"Expected JobService for " + schemaTarget);
+		return jobService.getJobExecutionIdsByTaskExecutionIds(taskExecutionIds);
+	}
+
+	@Override
 	public void restartJobExecution(long jobExecutionId, String schemaTarget) throws NoSuchJobExecutionException {
 		logger.info("restarting job:{}:{}", jobExecutionId, schemaTarget);
 		final TaskJobExecution taskJobExecution = this.getJobExecution(jobExecutionId, schemaTarget);
@@ -305,6 +313,10 @@ public class DefaultTaskJobService implements TaskJobService {
 		logger.info("stopped:{}:{}:status={}", jobExecutionId, schemaTarget, status);
 	}
 
+	@Override
+	public void populateComposeTaskRunnerStatus(Collection<AggregateTaskExecution> taskExecutions) {
+		aggregateJobQueryDao.populateCtrStatus(taskExecutions);
+	}
 
 	private TaskJobExecution getTaskJobExecution(JobExecution jobExecution, String schemaTarget) {
 		return new TaskJobExecution(

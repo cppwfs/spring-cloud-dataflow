@@ -32,7 +32,7 @@ K8S=$(realpath $SCDIR/../kubernetes)
 if [ ! -d "$K8S" ]; then
   K8S=$(realpath $SCDIR/../../kubernetes)
 fi
-$SCDIR/prepare-local-namespace.sh "$BROKER-sa" $BROKER
+$SCDIR/prepare-local-namespace.sh $BROKER "$BROKER-sa"
 kubectl create --namespace $BROKER -f $K8S/$BROKER/
 if [ "$BROKER" = "rabbitmq" ]; then
     kubectl rollout status deployment --namespace "rabbitmq" rabbitmq
@@ -56,7 +56,7 @@ else
     KAFKA_HOST="kafka.kafka"
     yq ".scdf.binder.type=\"kafka\"" -i ./scdf-values.yml
     yq ".scdf.binder.kafka.broker.host=\"$KAFKA_HOST\"" -i ./scdf-values.yml
-    yq ".scdf.binder.kafka.zk.host=\"kafka-zk.kafka\"" -i ./scdf-values.yml
+    yq ".scdf.binder.kafka.zk.host=\"kafka-zk\"" -i ./scdf-values.yml
 fi
 end_time=$(date +%s)
 elapsed=$((end_time - start_time))

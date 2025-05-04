@@ -36,7 +36,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-m2-
 
-    # target deploy repos
+#     target deploy repos
     - name: Configure JFrog Cli
       run: |
         jfrog rt mvnc \
@@ -49,7 +49,7 @@ jobs:
         echo JFROG_CLI_BUILD_NAME=spring-cloud-dataflow-main-milestone >> $GITHUB_ENV
         echo JFROG_CLI_BUILD_NUMBER=$GITHUB_RUN_NUMBER >> $GITHUB_ENV
 
-    # zoo extract and ensure
+#     zoo extract and ensure
     - name: Extract Zoo Context Properties
       uses: jvalkeal/build-zoo-handler@v0.0.4
       with:
@@ -58,8 +58,8 @@ jobs:
           BUILD_ZOO_HANDLER_milestone_version
           BUILD_ZOO_HANDLER_spring_cloud_deployer_version
           BUILD_ZOO_HANDLER_spring_cloud_dataflow_ui_version
-
-    # build and publish to configured target
+    - name: 'Install: xmllint'
+      uses: ./.github/actions/install-xmlutils
     - name: Build and Publish
       run: |
         jfrog rt mvn build-helper:parse-version versions:set \
@@ -96,12 +96,25 @@ jobs:
           -B
         jfrog rt build-clean
         ./spring-cloud-dataflow-package/set-package-version.sh
-        jfrog rt mvn -gs .github/settings.xml -Pstagingmilestone,full,deploymentfiles -B install -DskipTests 
+        jfrog rt mvn -gs .github/settings.xml -Pstagingmilestone,full,deploymentfiles,docs -B install -DskipTests 
         jfrog rt build-publish
-        echo BUILD_ZOO_HANDLER_spring_cloud_dataflow_version=$(mvn -gs .github/settings.xml -Pstagingmilestone help:evaluate -Dexpression=project.version -q -DforceStdout) >> $GITHUB_ENV
+        PROJECT_VERSION=$(mvn -gs .github/settings.xml -Pstagingmilestone help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo BUILD_ZOO_HANDLER_spring_cloud_dataflow_version=$PROJECT_VERSION >> $GITHUB_ENV
         echo BUILD_ZOO_HANDLER_spring_cloud_dataflow_buildname=spring-cloud-dataflow-main-milestone >> $GITHUB_ENV
         echo BUILD_ZOO_HANDLER_spring_cloud_dataflow_buildnumber=$GITHUB_RUN_NUMBER >> $GITHUB_ENV
-    # zoo tag
+
+#        set +e
+#        echo "::info ::Project version=$PROJECT_VERSION"
+#        SKIPPER_DOCS_PATTERN=$(.github/workflows/skipper-docs-name.sh $PROJECT_VERSION libs-milestone-local)
+#        if [[ "$SKIPPER_DOCS_PATTERN" == *"does not exist"* ]]; then
+#          echo "::error ::Skipper Docs URL=$SKIPPER_DOCS_PATTERN"
+#        else
+#          echo "::info ::Skipper Docs URL=$SKIPPER_DOCS_PATTERN"
+#          jfrog rt sp --build "$SKIPPER_DOCS_PATTERN" "buildName=$JFROG_CLI_BUILD_NAME;buildNumber=$JFROG_CLI_BUILD_NUMBER"
+#          echo "::info ::Skipper Docs Set Properties buildName=$JFROG_CLI_BUILD_NAME;buildNumber=$JFROG_CLI_BUILD_NUMBER"
+#        fi
+
+#     zoo tag
     - name: Tag Release
       uses: jvalkeal/build-zoo-handler@v0.0.4
       with:
@@ -109,7 +122,7 @@ jobs:
         tag-release-tag: ${{ env.BUILD_ZOO_HANDLER_spring_cloud_dataflow_version }}
         tag-release-tag-prefix: v
 
-    # build and publish images via composite action
+#     build and publish images via composite action
     - name: Build and Publish Images
       uses: ./.github/actions/build-images
       with:
@@ -118,7 +131,7 @@ jobs:
         dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
         GCR_JSON_KEY: ${{ secrets.GCR_JSON_KEY }}
 
-    # zoo success
+#     zoo success
     - name: Notify Build Success Zoo Handler Controller
       uses: jvalkeal/build-zoo-handler@v0.0.4
       with:
@@ -128,7 +141,7 @@ jobs:
             "event": "build-succeed"
           }
 
-    # zoo failure
+#     zoo failure
     - name: Notify Build Failure Zoo Handler Controller
       if: ${{ failure() }}
       uses: jvalkeal/build-zoo-handler@v0.0.4
@@ -139,7 +152,7 @@ jobs:
             "event": "build-failed",
             "message": "spring-cloud-dataflow failed"
           }
-    # clean m2 cache
+#     clean m2 cache
     - name: Clean cache
       run: |
         find ~/.m2/repository -type d -name '*SNAPSHOT' | xargs rm -fr

@@ -29,7 +29,7 @@ jobs:
                 "workflow_dispatch": {
                   "owner": "spring-cloud",
                   "repo": "spring-cloud-deployer",
-                  "ref": "2.9.x",
+                  "ref": "main",
                   "workflow": "release-worker.yml"
                 }
               },
@@ -39,7 +39,7 @@ jobs:
                 "workflow_dispatch": {
                   "owner": "spring-cloud",
                   "repo": "spring-cloud-dataflow-ui",
-                  "ref": "3.4.x",
+                  "ref": "main",
                   "workflow": "release-worker.yml"
                 }
               },
@@ -49,7 +49,7 @@ jobs:
                 "workflow_dispatch": {
                   "owner": "spring-cloud",
                   "repo": "spring-cloud-dataflow",
-                  "ref": "2.11.x",
+                  "ref": "main",
                   "workflow": "release-worker.yml"
                 }
               },
@@ -59,7 +59,7 @@ jobs:
                 "workflow_dispatch": {
                   "owner": "spring-cloud",
                   "repo": "spring-cloud-dataflow",
-                  "ref": "2.11.x",
+                  "ref": "main",
                   "workflow": "carvel-worker.yml"
                 }            
               },
@@ -69,7 +69,7 @@ jobs:
                 "workflow_dispatch": {
                   "owner": "spring-cloud",
                   "repo": "spring-cloud-dataflow",
-                  "ref": "2.11.x",
+                  "ref": "main",
                   "workflow": "promote-release.yml"
                 }
               },
@@ -79,7 +79,7 @@ jobs:
                 "workflow_dispatch": {
                   "owner": "spring-cloud",
                   "repo": "spring-cloud-dataflow",
-                  "ref": "2.11.x",
+                  "ref": "main",
                   "workflow": "central-release.yml"
                 }
               },
@@ -89,7 +89,7 @@ jobs:
                 "workflow_dispatch": {
                   "owner": "spring-cloud",
                   "repo": "spring-cloud-dataflow",
-                  "ref": "2.11.x",
+                  "ref": "main",
                   "workflow": "github-release.yml"
                 }
               },

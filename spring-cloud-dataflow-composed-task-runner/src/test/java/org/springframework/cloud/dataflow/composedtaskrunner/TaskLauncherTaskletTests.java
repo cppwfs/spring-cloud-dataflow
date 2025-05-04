@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
 import javax.sql.DataSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,7 +29,6 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -80,12 +78,12 @@ import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResp
 import org.springframework.security.oauth2.client.endpoint.OAuth2ClientCredentialsGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.ResourceAccessException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -94,8 +92,7 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Glenn Renfro
  */
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes={EmbeddedDataSourceConfiguration.class,
+@SpringJUnitConfig(classes = {EmbeddedDataSourceConfiguration.class,
 		org.springframework.cloud.dataflow.composedtaskrunner.TaskLauncherTaskletTests.TestConfiguration.class})
 public class TaskLauncherTaskletTests {
 	private final static Logger logger = LoggerFactory.getLogger(TaskLauncherTaskletTests.class);
@@ -262,6 +259,25 @@ public class TaskLauncherTaskletTests {
 		assertThat(executionContext.get("task-execution-id")).isEqualTo(2L);
 		assertThat(executionContext.get("schema-target")).isEqualTo(SchemaVersionTarget.defaultTarget().getName());
 		assertThat(((List<?>) taskArguments).get(0)).isEqualTo("--spring.cloud.task.parent-execution-id=88");
+	}
+
+	@Test
+	@DirtiesContext
+	public void testTaskLauncherTaskletStartTimeout() {
+		mockReturnValForTaskExecution(1L);
+		this.composedTaskProperties.setMaxStartWaitTime(500);
+		this.composedTaskProperties.setIntervalTimeBetweenChecks(1000);
+		TaskLauncherTasklet taskLauncherTasklet = getTaskExecutionTasklet();
+		ChunkContext chunkContext = chunkContext();
+		Throwable exception = assertThrows(TaskExecutionTimeoutException.class, () -> execute(taskLauncherTasklet, null, chunkContext));
+		Assertions.assertThat(exception.getMessage()).isEqualTo("Timeout occurred during " +
+				"startup of task with Execution Id 1");
+
+		createCompleteTaskExecution(0);
+		this.composedTaskProperties.setMaxStartWaitTime(500);
+		this.composedTaskProperties.setIntervalTimeBetweenChecks(1000);
+		TaskLauncherTasklet taskLauncherTaskletNoTimeout = getTaskExecutionTasklet();
+		assertDoesNotThrow(() -> execute(taskLauncherTaskletNoTimeout, null, chunkContext));
 	}
 
 	@Test

@@ -288,6 +288,30 @@ NOTE: Properties configured by using this mechanism have lower precedence than t
 They are overridden if a property with the same key is specified at task launch time (for example, `app.trigger.prop2`
 overrides the common property).
 
+==== Launching tasks with a specific application version
+
+When launching a task you can specify the specific version of the application.
+If no version is specified Spring Cloud Data Flow will use the default version of the application.
+To specify a version of the application to be used at launch time use the deployer property `version.<app-name>`.
+For example:
+
+====
+[source,bash,subs=attributes]
+----
+task launch my-task --properties 'version.timestamp=3.0.0'
+----
+====
+
+Similarly, when scheduling a task you will use the same format of `version.<app-name>`.  For example:
+
+====
+[source,bash,subs=attributes]
+----
+task schedule create --name my-schedule --definitionName my-task --expression '*/1 * * * *' --properties 'version.timestamp=3.0.0'
+----
+====
+
+
 [[spring-cloud-dataflow-task-limit-concurrent-executions]]
 === Limit the number concurrent task launches
 
@@ -583,6 +607,11 @@ The amount of time, in milliseconds, that the `ComposedTaskRunner` waits between
 Establish the transaction isolation level for the Composed Task Runner.
 A list of available transaction isolation levels can be found  https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/TransactionDefinition.html[here].
 Default is `ISOLATION_REPEATABLE_READ`.
+
+* `max-start-wait-time`
+The maximum amount of time, in milliseconds, that the Composed Task Runner will wait for the
+`start_time` of a steps `taskExecution` to be set before the execution of the Composed task is failed (Integer, default: 0).
+Determines the maximum time each child task is allowed for application startup. The default of `0` indicates no timeout.
 
 * `max-wait-time`
 The maximum amount of time, in milliseconds, that an individual step can run before the execution of the Composed task is failed (Integer, default: 0).

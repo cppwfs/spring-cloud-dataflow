@@ -24,9 +24,9 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +63,12 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 import org.springframework.restdocs.request.RequestParametersSnippet;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -86,7 +87,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.requestP
  * @author Gunnar Hillert
  * @author Eddú Meléndez Gonzales
  * @author Ilayaperumal Gopinathan
- *
+ * @author Corneil du Plessis
  */
 @EnableWebMvc
 @ActiveProfiles("repo-test")
@@ -96,7 +97,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.requestP
 		"spring.cloud.skipper.server.enableReleaseStateUpdateService=false",
 		"spring.main.allow-bean-definition-overriding=true"
 }, classes = ServerDependencies.class)
-@RunWith(SpringRunner.class)
 public abstract class BaseDocumentation {
 
 	protected MockMvc mockMvc;
@@ -177,7 +177,7 @@ public abstract class BaseDocumentation {
 				linkWithRel("curies").ignored().optional()).and(descriptors);
 	}
 
-	@Before
+	@BeforeEach
 	public void setupMocks() {
 		this.prepareDocumentationTests(this.context);
 	}
@@ -209,7 +209,7 @@ public abstract class BaseDocumentation {
 		DumperOptions dumperOptions = new DumperOptions();
 		dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		dumperOptions.setPrettyFlow(true);
-		Yaml yaml = new Yaml(dumperOptions);
+		Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(dumperOptions), dumperOptions);
 		Map<String, String> configMap = new HashMap<>();
 		configMap.put("config1", "value1");
 		configMap.put("config2", "value2");
